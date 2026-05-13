@@ -1,0 +1,2506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veja como vai ficar seu projeto</title>
+
+  <style>
+    /*
+      =========================================================
+      VISUALIZADOR PROFISSIONAL PARA DESIGNERS — INDEX.HTML
+      ---------------------------------------------------------
+      Arquitetura pensada para produtos gráficos reais.
+
+      PRODUTOS:
+      1. Livro (2 a 16 paginas)
+      2. Livreto / Folder
+         - 1 dobra:  bi-fold (4 pgs)
+         - 2 dobras: rollfold, zfold, gatefold (6 pgs)
+         - 3 dobras: rollfold, zfold, paralela dupla (8 pgs)
+         - 4 dobras: rollfold, zfold (10 pgs)
+      3. Frente e verso
+      4. Embalagem 3D
+
+      PONTOS IMPORTANTES:
+      - Separa lógica de leitura e lógica física.
+      - Folder usa mapeamento de imposição.
+      - Roll-fold tem compensação de aba interna.
+      - Embalagem 3D usa width, height e depth reais.
+      - Upload em massa distribui imagens na ordem lógica.
+      - Modo técnico mostra pranchetas externa/interna.
+      =========================================================
+    */
+
+    :root {
+      --bg-1: #070914;
+      --bg-2: #111827;
+      --panel: rgba(255, 255, 255, 0.09);
+      --panel-strong: rgba(255, 255, 255, 0.15);
+      --dark-glass: rgba(3, 7, 18, 0.62);
+      --stroke: rgba(255, 255, 255, 0.14);
+      --stroke-strong: rgba(255, 255, 255, 0.24);
+      --text: #f8fbff;
+      --muted: rgba(248, 251, 255, 0.66);
+      --muted-2: rgba(248, 251, 255, 0.46);
+      --paper: #fffaf0;
+      --paper-2: #f1eadb;
+      --accent: #06b6c7;
+      --accent-2: #8b5cf6;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #fb7185;
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 14px;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --page-w: 1;
+      --page-h: 1.414;
+      --cols: 1;
+      --doc-width: 860px;
+      --gap: 0px;
+      --box-w: 320px;
+      --box-h: 440px;
+      --box-d: 140px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      color: var(--text);
+      background: var(--bg-1);
+      font-family: Inter, Roboto, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 12%, rgba(139, 92, 246, 0.26), transparent 30%),
+        radial-gradient(circle at 84% 16%, rgba(6, 182, 199, 0.22), transparent 28%),
+        radial-gradient(circle at 50% 100%, rgba(14, 165, 233, 0.14), transparent 36%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.034) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.034) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(circle at center, black, transparent 72%);
+      opacity: 0.55;
+    }
+
+    button, input, select { font: inherit; }
+
+    .app {
+      position: relative;
+      width: min(1660px, 100%);
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 430px;
+      gap: 24px;
+      min-height: calc(100vh - 56px);
+    }
+
+    .main {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto minmax(560px, 1fr) auto;
+      gap: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-xl);
+      background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.035));
+      box-shadow: 0 24px 90px rgba(0,0,0,0.27);
+      overflow: hidden;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 26px 28px 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 12px;
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.075);
+      color: rgba(255,255,255,0.78);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      backdrop-filter: blur(14px);
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 18px rgba(6,182,199,0.72);
+    }
+
+    h1 {
+      max-width: 820px;
+      margin: 16px 0 10px;
+      font-size: clamp(34px, 5vw, 72px);
+      line-height: 0.95;
+      letter-spacing: -0.07em;
+    }
+
+    .subtitle {
+      max-width: 820px;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(14px, 1.4vw, 17px);
+      line-height: 1.6;
+    }
+
+    .project-summary {
+      min-width: 265px;
+      align-self: start;
+      padding: 14px;
+      border: 1px solid var(--stroke);
+      border-radius: 20px;
+      background: rgba(255,255,255,0.075);
+      backdrop-filter: blur(18px);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 8px 0;
+    }
+
+    .summary-row + .summary-row { border-top: 1px solid rgba(255,255,255,0.08); }
+    .summary-row strong { color: var(--text); text-align: right; font-weight: 900; }
+
+    .stage-wrap {
+      position: relative;
+      min-height: 560px;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 10px;
+      padding: 26px 28px;
+      overflow: auto;
+    }
+
+    .stage-bg {
+      position: absolute;
+      inset: 26px;
+      border-radius: 32px;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255,255,255,0.08), transparent 30%),
+        rgba(4, 8, 18, 0.28);
+      border: 1px solid rgba(255,255,255,0.07);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+      pointer-events: none;
+    }
+
+    .viewer {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      min-height: 520px;
+      display: grid;
+      place-items: center;
+      perspective: 1900px;
+      overflow: visible;
+    }
+
+    .viewer::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 7%;
+      width: min(82%, 980px);
+      height: 68px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.48), transparent 66%);
+      filter: blur(18px);
+      opacity: 0.84;
+      pointer-events: none;
+    }
+
+    .caption {
+      position: relative;
+      z-index: 3;
+      width: min(100%, 980px);
+      margin: 0 auto;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .flat-doc {
+      position: relative;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+      gap: var(--gap);
+      width: min(100%, var(--doc-width));
+      transform-style: preserve-3d;
+      filter: drop-shadow(0 28px 30px rgba(0,0,0,0.32));
+      animation: flatIn 680ms var(--ease) both;
+    }
+
+    @keyframes flatIn {
+      from { opacity: 0; transform: translateY(16px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .page, .panel-page {
+      position: relative;
+      aspect-ratio: var(--page-w) / var(--page-h);
+      min-width: 0;
+      overflow: hidden;
+      background: var(--paper);
+      box-shadow:
+        inset 0 0 0 1px rgba(0,0,0,0.08),
+        0 10px 22px rgba(0,0,0,0.16);
+      transform-style: preserve-3d;
+    }
+
+    .flat-doc:not(.has-gap) .page:not(:first-child),
+    .flat-doc:not(.has-gap) .panel-page:not(:first-child) {
+      border-left: 1px solid rgba(0,0,0,0.16);
+    }
+
+    .round-left { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+    .round-right { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+    .page::after, .panel-page::after, .box-face::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.08), transparent 8%, transparent 92%, rgba(0,0,0,0.07)),
+        linear-gradient(180deg, rgba(255,255,255,0.22), transparent 48%);
+      mix-blend-mode: multiply;
+      opacity: 0.72;
+    }
+
+    .page-media, .placeholder {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .page-media {
+      z-index: 2;
+      object-fit: cover;
+      opacity: 1;
+      transition: opacity 220ms ease;
+    }
+
+    .placeholder {
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      color: rgba(0,0,0,0.52);
+      text-align: center;
+      background:
+        radial-gradient(circle at 30% 18%, rgba(6,182,199,0.12), transparent 25%),
+        linear-gradient(135deg, #fffaf0, #e9e1d1);
+    }
+
+    .placeholder-inner { display: grid; justify-items: center; gap: 10px; }
+    .placeholder-icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.08);
+      font-size: 22px;
+      font-weight: 900;
+    }
+    .placeholder-inner span { max-width: 180px; font-size: 13px; line-height: 1.35; font-weight: 800; }
+
+    .page-title {
+      position: absolute;
+      z-index: 8;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      color: rgba(0,0,0,0.46);
+      font-size: clamp(30px, 4vw, 58px);
+      line-height: 1;
+      font-weight: 950;
+      letter-spacing: -0.065em;
+      white-space: nowrap;
+      pointer-events: none;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+      transition: opacity 200ms ease;
+    }
+
+    .page-badge {
+      position: absolute;
+      z-index: 9;
+      left: 12px;
+      top: 12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.68);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      backdrop-filter: blur(10px);
+      transition: opacity 200ms ease;
+    }
+
+    .panel-mm {
+      position: absolute;
+      z-index: 10;
+      right: 10px;
+      bottom: 10px;
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.86);
+      color: rgba(15,23,42,0.72);
+      font-size: 10px;
+      font-weight: 950;
+    }
+
+    .hide-titles .page-title,
+    .hide-titles .page-badge,
+    .hide-titles .panel-mm,
+    .presentation .page-title,
+    .presentation .page-badge,
+    .presentation .panel-mm { opacity: 0; pointer-events: none; }
+    .hide-images .page-media { opacity: 0; }
+
+    .opening-doc {
+      transform-style: preserve-3d;
+      transform: rotateX(0deg) rotateY(-4deg);
+    }
+    .opening-doc .page:nth-child(1) { transform-origin: right center; animation: leftPageOpen 780ms var(--ease) both; }
+    .opening-doc .page:nth-child(2) { transform-origin: left center; animation: rightPageOpen 780ms var(--ease) both; }
+    @keyframes leftPageOpen { from { transform: rotateY(64deg); filter: brightness(0.74); } to { transform: rotateY(0deg); filter: brightness(1); } }
+    @keyframes rightPageOpen { from { transform: rotateY(-64deg); filter: brightness(0.74); } to { transform: rotateY(0deg); filter: brightness(1); } }
+
+    /* ========= ANIMACOES DE DOBRA POR MODO ========= */
+    .fold-opening { transform-style: preserve-3d; perspective: 1800px; }
+    .fold-opening .page {
+      animation: foldPanelIn 620ms var(--ease) both;
+      animation-delay: calc(var(--panel-index, 0) * 130ms);
+      transform-origin: var(--panel-origin, left center);
+    }
+    @keyframes foldPanelIn {
+      from {
+        transform: rotateY(var(--panel-from, -110deg));
+        opacity: 0.35;
+        filter: brightness(0.72);
+      }
+      to {
+        transform: rotateY(0deg);
+        opacity: 1;
+        filter: brightness(1);
+      }
+    }
+
+    .fold-opening.mode-book {
+      transform: rotateX(0deg) rotateY(-3deg);
+    }
+
+    .fold-opening.mode-roll {
+      transform: rotateX(0deg) rotateY(-6deg);
+    }
+
+    .fold-opening.mode-z {
+      transform: rotateX(0deg) rotateY(0deg);
+    }
+
+    .fold-opening.mode-gate {
+      transform: rotateX(0deg) rotateY(0deg);
+    }
+
+    .fold-opening.mode-parallel {
+      transform: rotateX(0deg) rotateY(-5deg);
+    }
+
+    /* Animacao do Verso (girada 180) */
+    .fold-back-flip {
+      animation: foldBackFlip 760ms var(--ease) both;
+      transform-style: preserve-3d;
+    }
+    @keyframes foldBackFlip {
+      0%   { transform: rotateY(0deg) scale(1); opacity: 1; filter: brightness(1); }
+      45%  { transform: rotateY(90deg) scale(0.96); opacity: 0.55; filter: brightness(0.7); }
+      55%  { transform: rotateY(-90deg) scale(0.96); opacity: 0.55; filter: brightness(0.7); }
+      100% { transform: rotateY(0deg) scale(1); opacity: 1; filter: brightness(1); }
+    }
+
+    /* Botoes especiais do Folder */
+    .btn.btn-action {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.18);
+    }
+    .btn.btn-action:hover { background: rgba(6,182,199,0.18); }
+    .btn.btn-flip {
+      background: linear-gradient(135deg, rgba(139,92,246,0.85), rgba(6,182,199,0.85));
+      border-color: transparent;
+    }
+    .btn.btn-flip.active { outline: 3px solid rgba(139,92,246,0.32); }
+    .open-progress {
+      width: 100%;
+      max-width: 380px;
+      margin: 6px auto 0;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+    .open-progress > span {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 260ms var(--ease);
+    }
+
+
+    /* DOBRA FÍSICA — PAINÉIS CONECTADOS POR VINCOS REAIS */
+    .fold-sim {
+      position: relative;
+      z-index: 3;
+      width: min(100%, var(--sim-total-w));
+      height: var(--sim-h);
+      transform-style: preserve-3d;
+      perspective: 2200px;
+      overflow: visible;
+      filter: drop-shadow(0 30px 34px rgba(0,0,0,0.38));
+      animation: none;
+    }
+
+    .fold-sim-inner {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: var(--sim-total-w);
+      height: var(--sim-h);
+      transform:
+        translate(-50%, -50%)
+        rotateX(var(--sim-rx, 0deg))
+        rotateY(var(--sim-ry, -6deg));
+      transform-style: preserve-3d;
+    }
+
+    .fold-sim .page {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: var(--panel-w);
+      height: var(--panel-h);
+      aspect-ratio: auto;
+      border-radius: 0;
+      backface-visibility: visible;
+      transform-style: preserve-3d;
+      transition: none;
+      will-change: transform, filter;
+    }
+
+    .fold-sim .page::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 2px;
+      z-index: 12;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,0.24), transparent);
+      pointer-events: none;
+      opacity: 0.62;
+    }
+
+    .fold-sim .page:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+    .fold-sim .page:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+    .fold-sim .page:not(:first-child) {
+      box-shadow:
+        inset 1px 0 0 rgba(0,0,0,0.18),
+        inset 0 0 0 1px rgba(0,0,0,0.08),
+        0 10px 22px rgba(0,0,0,0.16);
+    }
+
+    .fold-sim.mode-gate .page::before { opacity: 0.48; }
+
+    .fold-range-wrap {
+      width: min(100%, 540px);
+      display: grid;
+      gap: 8px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.055);
+    }
+
+    .fold-range-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: rgba(255,255,255,0.76);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .fold-range-wrap input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: ew-resize;
+      touch-action: pan-x;
+    }
+
+    /* Movimento imediato: a barra não pode ficar lutando contra animações/re-renderizações. */
+    .fold-range-wrap .open-progress > span { transition: none; }
+    .fold-sim { animation: none; }
+    .fold-sim .page { transition: none; }
+
+    .book-wrap {
+      position: relative;
+      z-index: 3;
+      width: min(100%, var(--doc-width));
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      transform-style: preserve-3d;
+      filter: drop-shadow(0 30px 32px rgba(0,0,0,0.36));
+      animation: flatIn 680ms var(--ease) both;
+    }
+    .book-wrap.single { grid-template-columns: 1fr; width: min(100%, calc(var(--doc-width) / 2)); }
+    .book-wrap .page { aspect-ratio: var(--page-w) / var(--page-h); }
+    .book-spine {
+      position: absolute;
+      inset: 0 auto 0 50%;
+      z-index: 12;
+      width: 2px;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,0.24), transparent);
+      transform: translateX(-1px);
+    }
+    .book-wrap.turning .page:last-child { transform-origin: left center; animation: bookTurn 760ms var(--ease) both; }
+    @keyframes bookTurn { from { transform: rotateY(-58deg); filter: brightness(0.78); } to { transform: rotateY(0deg); filter: brightness(1); } }
+
+    .flip-card {
+      position: relative;
+      z-index: 3;
+      width: min(100%, var(--doc-width));
+      aspect-ratio: var(--page-w) / var(--page-h);
+      transform-style: preserve-3d;
+      transition: transform 820ms var(--ease);
+      filter: drop-shadow(0 28px 30px rgba(0,0,0,0.34));
+    }
+    .flip-card.show-back { transform: rotateY(180deg); }
+    .flip-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      overflow: hidden;
+      border-radius: 10px;
+      background: var(--paper);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+    }
+    .flip-face.back { transform: rotateY(180deg); }
+
+    .technical-wrap {
+      position: relative;
+      z-index: 3;
+      width: min(100%, 1180px);
+      display: grid;
+      gap: 22px;
+      animation: flatIn 680ms var(--ease) both;
+    }
+    .artboard-block {
+      display: grid;
+      gap: 10px;
+    }
+    .artboard-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: rgba(255,255,255,0.82);
+      font-size: 13px;
+      font-weight: 950;
+    }
+    .artboard-title span:last-child { color: var(--muted); font-size: 11px; font-weight: 800; }
+    .artboard-row {
+      display: flex;
+      width: 100%;
+      min-height: 210px;
+      filter: drop-shadow(0 20px 28px rgba(0,0,0,0.26));
+    }
+    .artboard-row .panel-page { flex: var(--panel-flex, 1) 1 0; aspect-ratio: auto; min-height: 210px; }
+
+    .packaging-stage {
+      position: relative;
+      z-index: 3;
+      width: 100%;
+      min-height: 530px;
+      display: grid;
+      place-items: center;
+      perspective: 1800px;
+      cursor: grab;
+    }
+    .packaging-stage:active { cursor: grabbing; }
+
+    .box-object {
+      position: relative;
+      width: var(--box-w);
+      height: var(--box-h);
+      transform-style: preserve-3d;
+      transform: rotateX(var(--rx, -13deg)) rotateY(var(--ry, -34deg)) scale(var(--zoom, 1));
+      transition: transform 100ms linear;
+      filter: drop-shadow(0 34px 38px rgba(0,0,0,0.42));
+    }
+
+    .box-object::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: calc(var(--box-w) * 1.02);
+      height: calc(var(--box-h) * 1.02);
+      transform: translate(-50%, -50%) translateZ(calc(var(--box-d) * -0.52));
+      background: rgba(0,0,0,0.06);
+      pointer-events: none;
+    }
+
+    .box-face {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      overflow: hidden;
+      background: var(--paper);
+      box-shadow:
+        inset 0 0 0 1px rgba(0,0,0,0.16),
+        inset 0 22px 34px rgba(255,255,255,0.16);
+      backface-visibility: visible;
+      transform-style: preserve-3d;
+    }
+
+    .box-front,
+    .box-back {
+      width: var(--box-w);
+      height: var(--box-h);
+      margin-left: calc(var(--box-w) / -2);
+      margin-top: calc(var(--box-h) / -2);
+    }
+
+    .box-front {
+      transform: translateZ(calc(var(--box-d) / 2));
+    }
+
+    .box-back {
+      transform: rotateY(180deg) translateZ(calc(var(--box-d) / 2));
+    }
+
+    .box-right,
+    .box-left {
+      width: var(--box-d);
+      height: var(--box-h);
+      margin-left: calc(var(--box-d) / -2);
+      margin-top: calc(var(--box-h) / -2);
+    }
+
+    .box-right {
+      transform: rotateY(90deg) translateZ(calc(var(--box-w) / 2));
+    }
+
+    .box-left {
+      transform: rotateY(-90deg) translateZ(calc(var(--box-w) / 2));
+    }
+
+    .box-top,
+    .box-bottom {
+      width: var(--box-w);
+      height: var(--box-d);
+      margin-left: calc(var(--box-w) / -2);
+      margin-top: calc(var(--box-d) / -2);
+    }
+
+    .box-top {
+      transform: rotateX(90deg) translateZ(calc(var(--box-h) / 2));
+    }
+
+    .box-bottom {
+      transform: rotateX(-90deg) translateZ(calc(var(--box-h) / 2));
+    }
+
+    .milk-roof {
+      position: absolute;
+      width: var(--box-w);
+      height: calc(var(--box-d) * 0.82);
+      left: 0;
+      top: calc(var(--box-d) * -0.38);
+      transform-style: preserve-3d;
+    }
+    .milk-roof-face {
+      position: absolute;
+      overflow: hidden;
+      background: var(--paper);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.14);
+    }
+    .milk-roof-front, .milk-roof-back {
+      width: var(--box-w);
+      height: calc(var(--box-d) * 0.64);
+      left: 0;
+      top: calc(var(--box-d) * 0.22);
+    }
+    .milk-roof-front { transform-origin: center bottom; transform: rotateX(44deg) translateZ(calc(var(--box-d) / 2)); }
+    .milk-roof-back { transform-origin: center bottom; transform: rotateX(-44deg) rotateY(180deg) translateZ(calc(var(--box-d) / 2)); }
+    .milk-ridge {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 10px;
+      height: calc(var(--box-d) * 0.8);
+      transform: translateX(-50%) rotateX(90deg) translateZ(calc(var(--box-h) / 2));
+      background: rgba(255,255,255,0.88);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);
+    }
+
+    .pack-flat {
+      position: relative;
+      z-index: 3;
+      display: grid;
+      gap: 10px;
+      animation: flatIn 680ms var(--ease) both;
+    }
+    .pack-row { display: flex; justify-content: center; align-items: stretch; gap: 0; filter: drop-shadow(0 22px 28px rgba(0,0,0,0.28)); }
+    .pack-panel { position: relative; overflow: hidden; background: var(--paper); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); }
+    .pack-front, .pack-back { width: 190px; height: 290px; }
+    .pack-side { width: 90px; height: 290px; }
+    .pack-top, .pack-bottom { width: 190px; height: 90px; margin: 0 auto; }
+
+    .controls {
+      display: grid;
+      gap: 14px;
+      padding: 0 28px 26px;
+    }
+    .state-tabs, .tool-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      width: min(100%, 1100px);
+      margin: 0 auto;
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(0,0,0,0.36);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .btn {
+      min-height: 48px;
+      padding: 0 20px;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 13px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      cursor: pointer;
+      transition: transform 170ms ease, background 170ms ease, border-color 170ms ease, box-shadow 170ms ease;
+    }
+    .btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.26); background: rgba(255,255,255,0.16); box-shadow: 0 10px 26px rgba(0,0,0,0.18); }
+    .btn-primary { background: linear-gradient(135deg, rgba(6,182,199,0.95), rgba(14,165,233,0.84)); border-color: transparent; }
+    .btn.active { outline: 3px solid rgba(6,182,199,0.22); background: linear-gradient(135deg, rgba(6,182,199,1), rgba(139,92,246,0.9)); border-color: transparent; }
+
+    .sidebar {
+      position: sticky;
+      top: 28px;
+      align-self: start;
+      display: grid;
+      gap: 14px;
+      max-height: calc(100vh - 56px);
+      overflow: auto;
+      padding: 18px;
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius-xl);
+      background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.075));
+      box-shadow: 0 22px 80px rgba(0,0,0,0.28);
+      backdrop-filter: blur(22px);
+    }
+
+    .section {
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      background: rgba(255,255,255,0.055);
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 12px;
+      font-size: 13px;
+      font-weight: 950;
+      letter-spacing: -0.02em;
+    }
+    .step-pill {
+      display: inline-grid;
+      place-items: center;
+      min-width: 24px;
+      height: 24px;
+      margin-right: 6px;
+      border-radius: 999px;
+      background: rgba(6,182,199,0.18);
+      color: #a7f3ff;
+      font-size: 11px;
+      font-weight: 950;
+    }
+
+    .project-cards { display: grid; gap: 10px; }
+    .project-card {
+      width: 100%;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: start;
+      gap: 12px;
+      min-height: 72px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      cursor: pointer;
+      text-align: left;
+      transition: transform 170ms ease, background 170ms ease, border-color 170ms ease;
+    }
+    .project-card:hover, .project-card.active { transform: translateY(-1px); border-color: rgba(6,182,199,0.54); background: rgba(6,182,199,0.12); }
+    .card-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 14px; background: rgba(255,255,255,0.1); font-size: 18px; }
+    .card-copy strong { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 950; }
+    .card-copy span { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; }
+
+    .field { display: grid; gap: 8px; margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { color: var(--muted); font-size: 12px; font-weight: 800; }
+    select, input[type="number"], input[type="range"] { width: 100%; }
+    select, input[type="number"] {
+      min-height: 42px;
+      padding: 0 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 14px;
+      background: rgba(8, 12, 24, 0.78);
+      color: #fff;
+      outline: none;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .three-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.055);
+      color: rgba(255,255,255,0.82);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .toggle input { appearance: none; width: 42px; height: 24px; border-radius: 999px; background: rgba(255,255,255,0.16); position: relative; cursor: pointer; transition: background 200ms ease; }
+    .toggle input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform 200ms var(--ease); }
+    .toggle input:checked { background: var(--accent); }
+    .toggle input:checked::after { transform: translateX(18px); }
+
+    .upload-drop {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 118px;
+      padding: 18px;
+      border: 1px dashed rgba(255,255,255,0.24);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.06);
+      text-align: center;
+      cursor: pointer;
+      transition: background 170ms ease, border-color 170ms ease, transform 170ms ease;
+    }
+    .upload-drop:hover, .upload-drop.dragging { transform: translateY(-1px); border-color: rgba(6,182,199,0.7); background: rgba(6,182,199,0.11); }
+    .upload-drop input { position: absolute; opacity: 0; pointer-events: none; }
+    .upload-drop strong { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 950; }
+    .upload-drop span { display: block; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .upload-list { display: grid; gap: 9px; margin-top: 12px; }
+    .file-label {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: center;
+      gap: 9px;
+      padding: 9px;
+      border: 1px dashed rgba(255,255,255,0.15);
+      border-radius: 15px;
+      background: rgba(255,255,255,0.055);
+      cursor: pointer;
+      transition: background 170ms ease, border-color 170ms ease, transform 170ms ease;
+    }
+    .file-label:hover { transform: translateY(-1px); border-color: rgba(6,182,199,0.54); background: rgba(255,255,255,0.085); }
+    .file-label input { position: absolute; opacity: 0; pointer-events: none; }
+    .file-number { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 12px; background: rgba(255,255,255,0.1); color: #fff; font-size: 12px; font-weight: 950; }
+    .file-text { min-width: 0; }
+    .file-text strong, .file-text span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-text strong { margin-bottom: 2px; font-size: 12px; font-weight: 950; }
+    .file-text span { color: var(--muted); font-size: 10px; }
+    .mini-btn { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; background: rgba(255,255,255,0.08); color: #fff; font-size: 12px; font-weight: 950; cursor: pointer; }
+    .file-action { color: rgba(255,255,255,0.72); font-size: 10px; font-weight: 950; }
+
+    .review-list { display: grid; gap: 8px; }
+    .review-item { display: flex; align-items: flex-start; gap: 9px; padding: 10px; border-radius: 14px; background: rgba(0,0,0,0.16); border: 1px solid rgba(255,255,255,0.07); color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .review-dot { width: 9px; height: 9px; flex: 0 0 auto; margin-top: 4px; border-radius: 999px; background: var(--success); box-shadow: 0 0 14px rgba(52,211,153,0.45); }
+    .review-item.warn .review-dot { background: var(--warning); box-shadow: 0 0 14px rgba(251,191,36,0.45); }
+    .review-item.danger .review-dot { background: var(--danger); box-shadow: 0 0 14px rgba(251,113,133,0.45); }
+    .hint { margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .presentation .sidebar, .presentation .header, .presentation .caption { display: none; }
+    .presentation .shell { grid-template-columns: 1fr; }
+    .presentation .main { min-height: calc(100vh - 56px); grid-template-rows: minmax(660px, 1fr) auto; }
+    .presentation .stage-wrap { min-height: 74vh; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 1200px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { position: relative; top: auto; max-height: none; }
+      .header { flex-direction: column; }
+      .project-summary { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .summary-row, .summary-row + .summary-row { display: grid; border-top: 0; padding: 8px; border-radius: 14px; background: rgba(255,255,255,0.055); }
+      .summary-row strong { text-align: left; }
+    }
+
+    @media (max-width: 740px) {
+      .app { padding: 12px; }
+      .main, .sidebar { border-radius: 22px; }
+      .header { padding: 20px 18px 0; }
+      .project-summary { grid-template-columns: 1fr; }
+      .stage-wrap { padding: 18px 10px; min-height: 520px; }
+      .stage-bg { inset: 12px; }
+      .viewer { min-height: 440px; }
+      .flat-doc, .book-wrap { width: var(--mobile-doc-width, 760px); max-width: none; }
+      .state-tabs, .tool-row { padding: 14px; }
+      .btn { width: 100%; }
+      .project-card, .file-label { grid-template-columns: auto 1fr; }
+      .file-action, .mini-btn { display: none; }
+      .three-cols { grid-template-columns: 1fr; }
+    }
+  
+
+    /* THREE.JS REAL 3D VIEWER */
+    .three-stage {
+      position: relative;
+      z-index: 3;
+      width: min(100%, 980px);
+      height: min(64vh, 620px);
+      min-height: 480px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255,255,255,0.08), transparent 32%),
+        linear-gradient(135deg, rgba(8,13,28,0.98), rgba(16,24,39,0.92));
+      box-shadow:
+        0 30px 90px rgba(0,0,0,0.36),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .three-stage canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .three-info {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      z-index: 5;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      background: rgba(0,0,0,0.42);
+      color: rgba(255,255,255,0.72);
+      font-size: 11px;
+      font-weight: 800;
+      backdrop-filter: blur(14px);
+      pointer-events: none;
+    }
+
+    .three-error {
+      display: grid;
+      place-items: center;
+      height: 100%;
+      padding: 28px;
+      color: rgba(255,255,255,0.76);
+      text-align: center;
+      line-height: 1.5;
+    }
+</style>
+</head>
+<body>
+  <main class="app" id="app">
+    <div class="shell">
+      <section class="main">
+        <header class="header">
+          <div>
+            <div class="eyebrow">Mockup inteligente para designers</div>
+            <h1>Veja como vai ficar seu projeto</h1>
+            <p class="subtitle">Escolha o produto gráfico, envie as artes na ordem lógica e visualize como ele será aprovado, dobrado, folheado ou montado em 3D.</p>
+          </div>
+          <aside class="project-summary" aria-label="Resumo do projeto">
+            <div class="summary-row"><span>Produto</span><strong id="summaryProject">Livreto</strong></div>
+            <div class="summary-row"><span>Modelo</span><strong id="summaryModel">Roll-fold</strong></div>
+            <div class="summary-row"><span>Status</span><strong id="summaryStatus">0 imagens</strong></div>
+          </aside>
+        </header>
+
+        <section class="stage-wrap">
+          <div class="stage-bg"></div>
+          <div class="viewer" id="viewer"></div>
+          <div class="caption" id="caption">Escolha um tipo de produto e envie suas imagens para começar.</div>
+        </section>
+
+        <section class="controls">
+          <div class="state-tabs" id="stateTabs"></div>
+          <div class="tool-row">
+            <button class="btn" id="toggleTitles" type="button">Ocultar títulos</button>
+            <button class="btn" id="toggleImages" type="button">Ocultar imagens</button>
+            <button class="btn" id="presentationBtn" type="button">Modo apresentação</button>
+            <button class="btn" id="resetCameraBtn" type="button">Resetar câmera</button>
+          </div>
+        </section>
+      </section>
+
+      <aside class="sidebar">
+        <section class="section">
+          <h2 class="section-title"><span><span class="step-pill">1</span>Tipo de produto</span></h2>
+          <div class="project-cards" id="productCards">
+            <button class="project-card" data-product="book" type="button">
+              <span class="card-icon">📖</span>
+              <span class="card-copy"><strong>Livro</strong><span>Capa, miolo, virada de páginas e contracapa.</span></span>
+            </button>
+            <button class="project-card active" data-product="folder" type="button">
+              <span class="card-icon">📄</span>
+              <span class="card-copy"><strong>Livreto / Folder</strong><span>Bi-fold, roll-fold, sanfona e modo técnico de imposição.</span></span>
+            </button>
+            <button class="project-card" data-product="frontBack" type="button">
+              <span class="card-icon">↔</span>
+              <span class="card-copy"><strong>Frente e verso</strong><span>Cartão, flyer simples, tag, postal ou voucher.</span></span>
+            </button>
+            <button class="project-card" data-product="packaging" type="button">
+              <span class="card-icon">◼</span>
+              <span class="card-copy"><strong>Embalagem 3D</strong><span>Caixa com largura, altura, profundidade e faces reais.</span></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title"><span><span class="step-pill">2</span>Configuração</span></h2>
+
+          <div class="field" id="folderModelField">
+            <label for="foldModel">Tipo de dobra · quantidade de dobras</label>
+            <select id="foldModel">
+              <optgroup label="1 dobra · 4 páginas">
+                <option value="bifold">Bi-fold (meia dobra)</option>
+              </optgroup>
+              <optgroup label="2 dobras · 6 páginas">
+                <option value="rollfold" selected>Roll-fold / Carteira</option>
+                <option value="zfold">Z-fold / Sanfona</option>
+                <option value="gatefold">Gate-fold / Porta</option>
+              </optgroup>
+              <optgroup label="3 dobras · 8 páginas">
+                <option value="rollfold8">Roll-fold (8 págs)</option>
+                <option value="zfold8">Z-fold / Sanfona (8 págs)</option>
+                <option value="doubleparallel">Paralela dupla</option>
+              </optgroup>
+              <optgroup label="4 dobras · 10 páginas">
+                <option value="zfold10">Sanfona (10 págs)</option>
+                <option value="rollfold10">Roll-fold (10 págs)</option>
+              </optgroup>
+            </select>
+            <p class="hint" style="margin-top:8px;">Cada opção define automaticamente a quantidade de páginas e a imposição (prancha externa/interna).</p>
+          </div>
+
+          <div class="field" id="pageCountField">
+            <label for="pageCount">Número de páginas</label>
+            <select id="pageCount">
+              <option value="2">2 páginas</option>
+              <option value="4">4 páginas</option>
+              <option value="6" selected>6 páginas</option>
+              <option value="8">8 páginas</option>
+              <option value="10">10 páginas</option>
+              <option value="12">12 páginas</option>
+              <option value="16">16 páginas</option>
+            </select>
+          </div>
+
+          <div class="field" id="ratioField">
+            <label for="ratioPreset">Formato das páginas</label>
+            <select id="ratioPreset">
+              <option value="iso" selected>A4 — padrão</option>
+              <option value="custom">Personalizada</option>
+            </select>
+          </div>
+
+          <div class="two-cols hidden" id="customRatioFields">
+            <div class="field"><label for="customW">Largura</label><input id="customW" type="number" min="0.1" step="0.01" value="1"></div>
+            <div class="field"><label for="customH">Altura</label><input id="customH" type="number" min="0.1" step="0.01" value="1.414"></div>
+          </div>
+
+          <div id="foldTechnicalFields">
+            <label class="toggle">
+              <span>Modo técnico de imposição</span>
+              <input id="technicalMode" type="checkbox">
+            </label>
+            <div id="compensationField" class="hidden">
+              <input id="compensationMm" type="hidden" value="0">
+            </div>
+          </div>
+
+          <div id="packagingFields" class="hidden">
+            <div class="field">
+              <label for="packageType">Tipo de embalagem</label>
+              <select id="packageType">
+                <option value="carton">Cartucho vertical</option>
+                <option value="milk">Caixa de leite / longa vida</option>
+                <option value="box">Caixa comum de papelão</option>
+              </select>
+            </div>
+            <div class="three-cols">
+              <div class="field"><label for="boxWidth">Largura</label><input id="boxWidth" type="number" min="20" step="1" value="90"></div>
+              <div class="field"><label for="boxHeight">Altura</label><input id="boxHeight" type="number" min="20" step="1" value="160"></div>
+              <div class="field"><label for="boxDepth">Profundidade</label><input id="boxDepth" type="number" min="10" step="1" value="55"></div>
+            </div>
+            <div class="field">
+              <label for="zoomRange">Zoom do mockup 3D</label>
+              <input id="zoomRange" type="range" min="0.55" max="1.55" step="0.01" value="1">
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title"><span><span class="step-pill">3</span>Upload</span></h2>
+          <label class="upload-drop" id="bulkDrop">
+            <input id="bulkUpload" type="file" accept="image/*" multiple>
+            <span><strong>Enviar várias imagens</strong><span>Distribuição automática na ordem lógica: imagem 1 → Página 1, imagem 2 → Página 2...</span></span>
+          </label>
+          <div class="upload-list" id="uploadList"></div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title"><span><span class="step-pill">4</span>Revisão inteligente</span></h2>
+          <div class="review-list" id="reviewList"></div>
+          <p class="hint">A revisão ajuda a evitar ordem errada, proporções incompatíveis e baixa resolução antes de apresentar ao cliente.</p>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    const RATIO_PRESETS = {
+      iso: { label: "ISO", text: "1:1.414", w: 1, h: 1.414 },
+      square: { label: "Quadrado", text: "1:1", w: 1, h: 1 },
+      card: { label: "Cartão", text: "9:5", w: 9, h: 5 },
+      story: { label: "Vertical", text: "9:16", w: 9, h: 16 },
+      wide: { label: "Horizontal", text: "16:9", w: 16, h: 9 }
+    };
+
+    const MULTIFOLD_STATES = [
+      { key: "closed", label: "Fechado" },
+      { key: "step", label: "Abrindo" },
+      { key: "inside", label: "100% aberto" },
+      { key: "outside", label: "Prancha externa" }
+    ];
+
+    const FOLD_MODELS = {
+      // ---- 1 dobra | 4 paginas ----
+      bifold: {
+        label: "Bi-fold (1 dobra | 4 paginas)",
+        openingMode: "book",
+        pages: 4,
+        folds: 1,
+        external: [4, 1],
+        internal: [2, 3],
+        reducedPage: null,
+        states: [
+          { key: "closed", label: "Fechado" },
+          { key: "inside", label: "Aberto / Interno" },
+          { key: "outside", label: "Prancha externa" }
+        ]
+      },
+
+      // ---- 2 dobras | 6 paginas ----
+      rollfold: {
+        label: "Roll-fold / Carteira (2 dobras | 6 paginas)",
+        openingMode: "roll",
+        pages: 6,
+        folds: 2,
+        external: [5, 6, 1],
+        internal: [2, 3, 4],
+        reducedPage: 5,
+        states: MULTIFOLD_STATES
+      },
+      zfold: {
+        label: "Z-fold / Sanfona (2 dobras | 6 paginas)",
+        openingMode: "z",
+        pages: 6,
+        folds: 2,
+        external: [6, 1, 2],
+        internal: [5, 4, 3],
+        reducedPage: null,
+        states: MULTIFOLD_STATES
+      },
+      gatefold: {
+        label: "Gate-fold / Porta (2 dobras | 6 paginas)",
+        openingMode: "gate",
+        pages: 6,
+        folds: 2,
+        external: [3, 6, 1, 4],
+        internal: [5, 2, 1, 4],
+        reducedPage: 3,
+        states: MULTIFOLD_STATES
+      },
+
+      // ---- 3 dobras | 8 paginas ----
+      rollfold8: {
+        label: "Roll-fold (3 dobras | 8 paginas)",
+        openingMode: "roll",
+        pages: 8,
+        folds: 3,
+        external: [6, 7, 8, 1],
+        internal: [2, 3, 4, 5],
+        reducedPage: 6,
+        states: MULTIFOLD_STATES
+      },
+      zfold8: {
+        label: "Z-fold / Sanfona (3 dobras | 8 paginas)",
+        openingMode: "z",
+        pages: 8,
+        folds: 3,
+        external: [8, 1, 2, 7],
+        internal: [3, 6, 5, 4],
+        reducedPage: null,
+        states: MULTIFOLD_STATES
+      },
+      doubleparallel: {
+        label: "Paralela dupla (3 dobras | 8 paginas)",
+        openingMode: "parallel",
+        pages: 8,
+        folds: 3,
+        external: [7, 8, 1, 2],
+        internal: [3, 4, 5, 6],
+        reducedPage: 7,
+        states: MULTIFOLD_STATES
+      },
+
+      // ---- 4 dobras | 10 paginas ----
+      zfold10: {
+        label: "Sanfona (4 dobras | 10 paginas)",
+        openingMode: "z",
+        pages: 10,
+        folds: 4,
+        external: [10, 1, 2, 9, 3],
+        internal: [8, 4, 7, 5, 6],
+        reducedPage: null,
+        states: MULTIFOLD_STATES
+      },
+      rollfold10: {
+        label: "Roll-fold (4 dobras | 10 paginas)",
+        openingMode: "roll",
+        pages: 10,
+        folds: 4,
+        external: [7, 8, 9, 10, 1],
+        internal: [2, 3, 4, 5, 6],
+        reducedPage: 7,
+        states: MULTIFOLD_STATES
+      }
+    };
+
+    const FACE_NAMES = ["Frente", "Lateral direita", "Verso", "Lateral esquerda", "Topo", "Base"];
+
+    const state = {
+      product: "folder",
+      foldModel: "rollfold",
+      pageCount: 6,
+      ratioPreset: "iso",
+      customW: 1,
+      customH: 1.414,
+      autoW: null,
+      autoH: null,
+      technicalMode: false,
+      compensationMm: 0,
+      packageType: "carton",
+      boxWidth: 90,
+      boxHeight: 160,
+      boxDepth: 55,
+      view: "inside",
+      openStep: 0,
+      openPct: 100,
+      folderSide: "front",
+      showTitles: true,
+      showImages: true,
+      presentation: false,
+      images: {},
+      bookSpread: 0,
+      camera: { rx: -13, ry: -32, zoom: 1 },
+      drag: { active: false, x: 0, y: 0 }
+    };
+
+    const els = {
+      app: document.getElementById("app"),
+      viewer: document.getElementById("viewer"),
+      caption: document.getElementById("caption"),
+      stateTabs: document.getElementById("stateTabs"),
+      productCards: document.getElementById("productCards"),
+      foldModel: document.getElementById("foldModel"),
+      folderModelField: document.getElementById("folderModelField"),
+      pageCount: document.getElementById("pageCount"),
+      pageCountField: document.getElementById("pageCountField"),
+      ratioPreset: document.getElementById("ratioPreset"),
+      ratioField: document.getElementById("ratioField"),
+      customRatioFields: document.getElementById("customRatioFields"),
+      customW: document.getElementById("customW"),
+      customH: document.getElementById("customH"),
+      foldTechnicalFields: document.getElementById("foldTechnicalFields"),
+      technicalMode: document.getElementById("technicalMode"),
+      compensationField: document.getElementById("compensationField"),
+      compensationMm: document.getElementById("compensationMm"),
+      packagingFields: document.getElementById("packagingFields"),
+      packageType: document.getElementById("packageType"),
+      boxWidth: document.getElementById("boxWidth"),
+      boxHeight: document.getElementById("boxHeight"),
+      boxDepth: document.getElementById("boxDepth"),
+      zoomRange: document.getElementById("zoomRange"),
+      bulkDrop: document.getElementById("bulkDrop"),
+      bulkUpload: document.getElementById("bulkUpload"),
+      uploadList: document.getElementById("uploadList"),
+      reviewList: document.getElementById("reviewList"),
+      summaryProject: document.getElementById("summaryProject"),
+      summaryModel: document.getElementById("summaryModel"),
+      summaryStatus: document.getElementById("summaryStatus"),
+      toggleTitles: document.getElementById("toggleTitles"),
+      toggleImages: document.getElementById("toggleImages"),
+      presentationBtn: document.getElementById("presentationBtn"),
+      resetCameraBtn: document.getElementById("resetCameraBtn")
+    };
+
+    function productLabel() {
+      return ({ book: "Livro", folder: "Livreto", frontBack: "Frente e verso", packaging: "Embalagem" })[state.product];
+    }
+
+    function getRatio() {
+      if (state.product === "packaging") return { label: "Faces 3D", text: `${state.boxWidth}×${state.boxHeight}×${state.boxDepth}`, w: state.boxWidth, h: state.boxHeight };
+      if (state.ratioPreset === "custom") return { label: "Personalizada", text: `${state.customW}:${state.customH}`, w: state.customW || 1, h: state.customH || 1 };
+      if (state.ratioPreset === "auto") return { label: "Automática", text: state.autoW && state.autoH ? `${state.autoW}:${state.autoH}` : "aguardando imagem", w: state.autoW || 1, h: state.autoH || 1.414 };
+      return RATIO_PRESETS[state.ratioPreset];
+    }
+
+    function currentFold() { return FOLD_MODELS[state.foldModel]; }
+
+    // LÓGICA UNIVERSAL DE VERSO
+    // Para qualquer material frente/verso: verso da página X = total de páginas + 1 - X.
+    // Exemplo com 6 páginas: 1 ⇄ 6, 2 ⇄ 5, 3 ⇄ 4.
+    function backPageFor(pageNumber, totalPages) {
+      return totalPages + 1 - pageNumber;
+    }
+
+    function frontPanelsForTotal(totalPages) {
+      const visiblePanels = Math.max(1, Math.ceil(totalPages / 2));
+      return Array.from({ length: visiblePanels }, (_, index) => index + 1);
+    }
+
+    function backPanelsFor(frontPanels, totalPages) {
+      return frontPanels.map(pageNumber => backPageFor(pageNumber, totalPages));
+    }
+
+    function getFolderFrontPanels(fold = currentFold()) {
+      const totalPages = fold.pages || expectedCount();
+      return frontPanelsForTotal(totalPages);
+    }
+
+    function getFolderBackPanels(frontPanels, fold = currentFold()) {
+      const totalPages = fold.pages || expectedCount();
+      return backPanelsFor(frontPanels, totalPages);
+    }
+
+    function getFolderMaxOpenStep(fold = currentFold()) {
+      return Math.max(1, getFolderFrontPanels(fold).length - 1);
+    }
+
+    function expectedCount() {
+      if (state.product === "packaging") return 6;
+      if (state.product === "frontBack") return 2;
+      if (state.product === "folder") return currentFold().pages;
+      return state.pageCount;
+    }
+
+    function uploadedCount() { return Object.keys(state.images).filter(k => Number(k) < expectedCount() && state.images[k]).length; }
+
+    function normalize() {
+      if (state.product === "frontBack") state.pageCount = 2;
+      if (state.product === "packaging") state.pageCount = 6;
+      if (state.product === "folder") {
+        state.pageCount = currentFold().pages;
+        state.openPct = Math.max(0, Math.min(100, Number(state.openPct ?? 100)));
+        state.openStep = Math.round((state.openPct / 100) * getFolderMaxOpenStep(currentFold()));
+        if (!["front", "back"].includes(state.folderSide)) state.folderSide = "front";
+      }
+
+      const states = getStates();
+      if (!states.some(s => s.key === state.view) && state.product !== "folder") {
+        state.view = states[0] ? states[0].key : "";
+      }
+
+      Object.keys(state.images).forEach(k => { if (Number(k) >= expectedCount()) delete state.images[k]; });
+      state.bookSpread = Math.min(state.bookSpread, Math.max(0, Math.floor((state.pageCount - 4) / 2)));
+    }
+
+    function getStates() {
+      if (state.product === "book") {
+        return [
+          { key: "cover", label: "Capa" },
+          { key: "prevPage", label: "← Página" },
+          { key: "spread", label: `Miolo ${state.bookSpread + 1}` },
+          { key: "nextPage", label: "Página →" },
+          { key: "backCover", label: "Contracapa" }
+        ];
+      }
+      if (state.product === "frontBack") return [
+        { key: "front", label: "Frente" },
+        { key: "back", label: "Verso" },
+        { key: "compare", label: "Comparar" }
+      ];
+      if (state.product === "packaging") return [
+        { key: "box3d", label: "Mockup 3D" },
+        { key: "packFlat", label: "Planificação" }
+      ];
+      if (state.product === "folder") {
+        if (state.technicalMode) {
+          return [
+            { key: "technical", label: "Modo técnico", kind: "view" }
+          ];
+        }
+        return [
+          { key: "verso", label: state.folderSide === "back" ? "Frente" : "Verso", kind: "flip" }
+        ];
+      }
+      return currentFold().states;
+    }
+
+    function pageName(index) {
+      if (state.product === "packaging") return FACE_NAMES[index] || `Face ${index + 1}`;
+      return `Página ${index + 1}`;
+    }
+
+    function imageForPageNumber(pageNumber) { return state.images[pageNumber - 1]; }
+
+    function pageMarkupByNumber(pageNumber, opts = {}) {
+      const index = pageNumber - 1;
+      const image = state.images[index];
+      const title = opts.title || `Pág ${pageNumber}`;
+      const badge = opts.badge || `Página ${pageNumber}`;
+      const flex = opts.flex || 1;
+      const mm = opts.mm || null;
+      const cls = opts.panel ? "panel-page" : "page";
+      const styles = [`--panel-flex:${flex}`];
+      if (opts.panelIndex !== undefined && opts.panelIndex !== null) styles.push(`--panel-index:${opts.panelIndex}`);
+      if (opts.panelFrom !== undefined && opts.panelFrom !== null) styles.push(`--panel-from:${opts.panelFrom}deg`);
+      if (opts.panelOrigin) styles.push(`--panel-origin:${opts.panelOrigin}`);
+      return `
+        <article class="${cls} ${opts.round || ""}" style="${styles.join('; ')}" data-index="${index}">
+          <div class="placeholder"><div class="placeholder-inner"><div class="placeholder-icon">+</div><span>Envie a imagem da ${badge}</span></div></div>
+          ${image ? `<img class="page-media" src="${image.src}" alt="${badge}">` : ""}
+          <div class="page-title">${title}</div>
+          <div class="page-badge">${badge}</div>
+          ${mm ? `<div class="panel-mm">${mm}</div>` : ""}
+        </article>
+      `;
+    }
+
+    function faceMarkup(index, cls = "") {
+      const img = state.images[index];
+      const name = FACE_NAMES[index] || `Face ${index + 1}`;
+      return `
+        <div class="placeholder"><div class="placeholder-inner"><div class="placeholder-icon">+</div><span>${name}</span></div></div>
+        ${img ? `<img class="page-media" src="${img.src}" alt="${name}">` : ""}
+        <div class="page-badge">${name}</div>
+      `;
+    }
+
+    function panelAnimFor(mode, index, count) {
+      if (!mode || mode === "none") return { from: 0, origin: "center center" };
+      if (mode === "book") {
+        return index === 0
+          ? { from: 150, origin: "right center" }
+          : { from: -150, origin: "left center" };
+      }
+      if (mode === "roll") return { from: -125, origin: "left center" };
+      if (mode === "z") {
+        return index % 2 === 0
+          ? { from: -110, origin: "left center" }
+          : { from: 110, origin: "right center" };
+      }
+      if (mode === "gate") {
+        return index < count / 2
+          ? { from: 120, origin: "right center" }
+          : { from: -120, origin: "left center" };
+      }
+      if (mode === "parallel") {
+        return index < 2
+          ? { from: -130, origin: "left center" }
+          : { from: 130, origin: "right center" };
+      }
+      return { from: -90, origin: "left center" };
+    }
+
+    function renderFlatPages(pageNumbers, opts = {}) {
+      const ratio = getRatio();
+      const cols = opts.cols || pageNumbers.length;
+      const targetHeight = cols === 1 ? 520 : cols === 2 ? 430 : 360;
+      const width = Math.max(280, Math.min(1320, targetHeight * (ratio.w / ratio.h) * cols));
+      const doc = document.createElement("div");
+      const classes = ["flat-doc"];
+      if (opts.gap) classes.push("has-gap");
+      if (opts.opening) classes.push("opening-doc");
+      if (opts.openingMode) {
+        classes.push("fold-opening");
+        classes.push(`mode-${opts.openingMode}`);
+      }
+      if (opts.flipped) classes.push("fold-back-flip");
+      doc.className = classes.join(" ");
+      doc.style.setProperty("--cols", cols);
+      doc.style.setProperty("--doc-width", `${width}px`);
+      doc.style.setProperty("--mobile-doc-width", `${Math.max(760, width)}px`);
+      doc.style.setProperty("--page-w", ratio.w);
+      doc.style.setProperty("--page-h", ratio.h);
+      doc.style.setProperty("--gap", opts.gap ? "12px" : "0px");
+      doc.innerHTML = pageNumbers.map((n, i) => {
+        const anim = opts.openingMode ? panelAnimFor(opts.openingMode, i, pageNumbers.length) : null;
+        return pageMarkupByNumber(n, {
+          round: `${i === 0 ? "round-left" : ""} ${i === pageNumbers.length - 1 ? "round-right" : ""}`,
+          panelIndex: i,
+          panelFrom: anim ? anim.from : null,
+          panelOrigin: anim ? anim.origin : null
+        });
+      }).join("");
+      els.viewer.innerHTML = "";
+      els.viewer.appendChild(doc);
+    }
+
+    function clampNumber(value, min, max) {
+      return Math.max(min, Math.min(max, Number(value) || 0));
+    }
+
+    function syncOpenStepFromPct() {
+      const folds = getFolderMaxOpenStep(currentFold());
+      state.openPct = clampNumber(state.openPct, 0, 100);
+      state.openStep = Math.round((state.openPct / 100) * folds);
+    }
+
+    let foldRangeFrame = null;
+    function updateFoldRangeVisual(rangeWrap) {
+      if (!rangeWrap) return;
+      const pct = clampNumber(state.openPct, 0, 100);
+      const label = rangeWrap.querySelector('.fold-range-label strong');
+      const progress = rangeWrap.querySelector('.open-progress > span');
+      const input = rangeWrap.querySelector('#foldOpenRange');
+      if (label) label.textContent = `${Math.round(pct)}%`;
+      if (progress) progress.style.width = `${pct}%`;
+      if (input && Number(input.value) !== pct) input.value = pct;
+    }
+
+    function requestFolderFluidRender(rangeWrap) {
+      updateFoldRangeVisual(rangeWrap);
+      if (foldRangeFrame) cancelAnimationFrame(foldRangeFrame);
+      foldRangeFrame = requestAnimationFrame(() => {
+        foldRangeFrame = null;
+        syncOpenStepFromPct();
+        renderViewer();
+        updateSummary();
+      });
+    }
+
+    function physicalPageMarkupByNumber(pageNumber, opts = {}) {
+      const index = pageNumber - 1;
+      const image = state.images[index];
+      const title = opts.title || `Pág ${pageNumber}`;
+      const badge = opts.badge || `Página ${pageNumber}`;
+      return `
+        <article class="page ${opts.round || ""}" style="${opts.style || ""}" data-index="${index}">
+          <div class="placeholder"><div class="placeholder-inner"><div class="placeholder-icon">+</div><span>Envie a imagem da ${badge}</span></div></div>
+          ${image ? `<img class="page-media" src="${image.src}" alt="${badge}">` : ""}
+          <div class="page-title">${title}</div>
+          <div class="page-badge">${badge}</div>
+        </article>
+      `;
+    }
+
+    function getPhysicalFoldRelativeAngles(mode, count, closedAngle) {
+      const hinges = Math.max(0, count - 1);
+      if (hinges === 0) return [];
+
+      if (mode === "z") {
+        return Array.from({ length: hinges }, (_, i) => (i % 2 === 0 ? -closedAngle : closedAngle));
+      }
+
+      if (mode === "parallel") {
+        // Paralela dupla: fecha em blocos paralelos. Em 4 painéis, os dois primeiros recolhem
+        // para um sentido e o último retorna, formando o bloco compacto típico da dobra paralela.
+        if (count === 4) return [-closedAngle, -closedAngle, closedAngle];
+        return Array.from({ length: hinges }, (_, i) => i < Math.ceil(hinges / 2) ? -closedAngle : closedAngle);
+      }
+
+      // Roll-fold/carteira e bi-fold: recolhimento em cadeia, como camadas entrando uma na outra.
+      return Array.from({ length: hinges }, () => -closedAngle);
+    }
+
+    function buildConnectedChain(count, panelW, mode, t) {
+      const closedAngle = 180 * (1 - t);
+      const relativeAngles = getPhysicalFoldRelativeAngles(mode, count, closedAngle);
+      const panels = [{ x: 0, z: 0, angle: 0 }];
+
+      for (let i = 1; i < count; i++) {
+        const prev = panels[i - 1];
+        const prevRad = prev.angle * Math.PI / 180;
+
+        // O vinco do próximo painel nasce exatamente na borda direita real do painel anterior.
+        // Esta é a correção principal: não há gap, não há folha solta, só geometria encadeada.
+        const hingeX = prev.x + Math.cos(prevRad) * panelW;
+        const hingeZ = prev.z - Math.sin(prevRad) * panelW;
+        panels.push({
+          x: hingeX,
+          z: hingeZ,
+          angle: prev.angle + relativeAngles[i - 1]
+        });
+      }
+
+      return panels;
+    }
+
+    function buildGatePanels(count, panelW, t) {
+      const closedAngle = 180 * (1 - t);
+      const panels = [];
+
+      if (count <= 2) return buildConnectedChain(count, panelW, "book", t);
+
+      if (count === 3) {
+        // Gate-fold real de 2 dobras: painel central fixo, abas laterais presas nos dois vincos.
+        panels[0] = { x: 0, z: 0, angle: closedAngle, origin: "right center", side: "left" };
+        panels[1] = { x: panelW, z: 0, angle: 0, origin: "left center", side: "center" };
+        panels[2] = { x: panelW * 2, z: 0, angle: -closedAngle, origin: "left center", side: "right" };
+        return panels;
+      }
+
+      // Double-gate / janela com miolo maior: centro fixo e duas portas laterais.
+      for (let i = 0; i < count; i++) {
+        panels[i] = { x: i * panelW, z: 0, angle: 0, origin: "left center", side: "center" };
+      }
+      panels[0] = { x: 0, z: 0, angle: closedAngle, origin: "right center", side: "left" };
+      panels[count - 1] = { x: (count - 1) * panelW, z: 0, angle: -closedAngle, origin: "left center", side: "right" };
+      return panels;
+    }
+
+    function getPanelExtents(panel, panelW) {
+      const rad = panel.angle * Math.PI / 180;
+      if (panel.origin === "right center") {
+        const hingeX = panel.x + panelW;
+        const hingeZ = panel.z;
+        const leftX = hingeX - Math.cos(rad) * panelW;
+        const leftZ = hingeZ + Math.sin(rad) * panelW;
+        return { minX: Math.min(leftX, hingeX), maxX: Math.max(leftX, hingeX), minZ: Math.min(leftZ, hingeZ), maxZ: Math.max(leftZ, hingeZ) };
+      }
+      const endX = panel.x + Math.cos(rad) * panelW;
+      const endZ = panel.z - Math.sin(rad) * panelW;
+      return { minX: Math.min(panel.x, endX), maxX: Math.max(panel.x, endX), minZ: Math.min(panel.z, endZ), maxZ: Math.max(panel.z, endZ) };
+    }
+
+    function renderContinuousFold(pageNumbers, opts = {}) {
+      const pct = clampNumber(opts.pct ?? 100, 0, 100);
+      const t = pct / 100;
+      const mode = opts.openingMode || "roll";
+      const ratio = getRatio();
+      const count = Math.max(1, pageNumbers.length);
+
+      if (count === 1) {
+        renderFlatPages([pageNumbers[0]], { cols: 1 });
+        return;
+      }
+
+      const panelH = count <= 2 ? 430 : 360;
+      const panelW = Math.max(120, panelH * (ratio.w / ratio.h));
+      const rawPanels = mode === "gate"
+        ? buildGatePanels(count, panelW, t)
+        : buildConnectedChain(count, panelW, mode === "book" ? "book" : mode, t);
+
+      let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+      rawPanels.forEach(panel => {
+        const e = getPanelExtents(panel, panelW);
+        minX = Math.min(minX, e.minX);
+        maxX = Math.max(maxX, e.maxX);
+        minZ = Math.min(minZ, e.minZ);
+        maxZ = Math.max(maxZ, e.maxZ);
+      });
+
+      const visualW = Math.max(panelW, maxX - minX);
+      const totalW = Math.max(panelW * 1.18, visualW + panelW * 0.34);
+      const offsetX = (totalW - visualW) / 2 - minX;
+      const depth = Math.max(1, maxZ - minZ);
+
+      // Camera frontal e camera traseira:
+      // A dobra fisica continua sendo a mesma. No verso, nao criamos outro folder;
+      // invertemos a leitura de profundidade e dos angulos, como uma camera atras
+      // do mesmo objeto, mantendo a ordem horizontal dos paineis para o usuario.
+      const isBackCamera = opts.cameraSide === "back" || state.folderSide === "back";
+      const cameraRy = isBackCamera ? (mode === "z" ? "0deg" : "6deg") : (mode === "z" ? "0deg" : "-6deg");
+
+      const doc = document.createElement("div");
+      doc.className = `fold-sim mode-${mode} ${isBackCamera ? "camera-back" : "camera-front"}`;
+      doc.style.setProperty("--sim-total-w", `${Math.min(1320, totalW)}px`);
+      doc.style.setProperty("--sim-h", `${panelH}px`);
+      doc.style.setProperty("--panel-w", `${panelW}px`);
+      doc.style.setProperty("--panel-h", `${panelH}px`);
+      doc.style.setProperty("--page-w", ratio.w);
+      doc.style.setProperty("--page-h", ratio.h);
+      doc.style.setProperty("--sim-rx", "0deg");
+      doc.style.setProperty("--sim-ry", cameraRy);
+
+      const panelHtml = pageNumbers.map((n, i) => {
+        const panel = rawPanels[i];
+        const origin = panel.origin || "left center";
+        const zLift = mode === "gate"
+          ? (panel.side === "center" ? 0 : 2 + i * 0.3)
+          : i * 0.85;
+
+        // Camera traseira = mesma dobra vista por tras.
+        // Por isso o X fica no mesmo lugar, mas a profundidade e a rotacao aparente
+        // invertem. Isso impede o erro de “trocar paginas” sem mudar a perspectiva.
+        const visibleAngle = isBackCamera ? -panel.angle : panel.angle;
+        const visibleZ = isBackCamera ? -(panel.z + zLift) : (panel.z + zLift);
+
+        const shadeByAngle = Math.min(0.38, Math.abs(panel.angle) / 180 * 0.24);
+        const normalizedDepth = isBackCamera
+          ? Math.max(0, maxZ - panel.z) / (depth + 1)
+          : Math.max(0, panel.z - minZ) / (depth + 1);
+        const shadeByDepth = normalizedDepth * 0.08;
+        const shade = 1 - Math.min(0.42, shadeByAngle + shadeByDepth);
+        const baseZIndex = mode === "gate"
+          ? (panel.side === "center" ? 4 : 8 + i)
+          : 10 + i;
+        const zIndex = isBackCamera ? 100 - baseZIndex : baseZIndex;
+        const transform = `translate3d(${(panel.x + offsetX).toFixed(3)}px, 0, ${visibleZ.toFixed(3)}px) rotateY(${visibleAngle.toFixed(4)}deg)`;
+        const style = `transform:${transform}; transform-origin:${origin}; filter:brightness(${shade.toFixed(3)}); z-index:${zIndex};`;
+        return physicalPageMarkupByNumber(n, {
+          style,
+          round: `${i === 0 ? "round-left" : ""} ${i === pageNumbers.length - 1 ? "round-right" : ""}`
+        });
+      }).join("");
+
+      doc.innerHTML = `<div class="fold-sim-inner">${panelHtml}</div>`;
+      els.viewer.innerHTML = "";
+      els.viewer.appendChild(doc);
+    }
+
+    function renderFolder() {
+      const fold = currentFold();
+      if (state.technicalMode) return renderTechnicalFold();
+
+      const frontPanels = getFolderFrontPanels(fold);
+      const backPanels = getFolderBackPanels(frontPanels, fold);
+      syncOpenStepFromPct();
+      const pct = state.openPct;
+      const visibleNumbers = state.folderSide === "back" ? backPanels : frontPanels;
+
+      renderContinuousFold(visibleNumbers, {
+        openingMode: fold.openingMode,
+        pct,
+        cameraSide: state.folderSide
+      });
+
+      if (state.folderSide === "back") {
+        els.caption.textContent = `Camera traseira em ${Math.round(pct)}% aberto: mesmo folder visto por tras (${frontPanels.map((page, i) => `Pág ${page} ⇄ Pág ${backPanels[i]}`).join(" · ")}).`;
+      } else if (pct <= 0.5) {
+        els.caption.textContent = `Material fechado. Use a barra de abertura para simular a dobra real.`;
+      } else if (pct >= 99.5) {
+        els.caption.textContent = `100% aberto: ${frontPanels.map(p => `Pág ${p}`).join(" · ")}. Clique em "Verso" para ver as páginas de trás com a mesma abertura.`;
+      } else {
+        els.caption.textContent = `${Math.round(pct)}% aberto: as páginas permanecem grudadas e dobram pelo vinco do ${fold.label}.`;
+      }
+    }
+
+    function panelFlexForPage(pageNumber) {
+      const fold = currentFold();
+      if (fold.reducedPage !== pageNumber) return 1;
+      const main = 100;
+      const reduced = Math.max(85, main - Number(state.compensationMm || 0));
+      return reduced / main;
+    }
+
+    function panelMmForPage(pageNumber) {
+      const fold = currentFold();
+      if (fold.reducedPage !== pageNumber) return "100 mm";
+      return `${Math.max(85, 100 - Number(state.compensationMm || 0))} mm`;
+    }
+
+    function renderTechnicalFold() {
+      const fold = currentFold();
+      const wrap = document.createElement("div");
+      wrap.className = "technical-wrap";
+      const renderRow = (title, arr, note) => `
+        <div class="artboard-block">
+          <div class="artboard-title"><span>${title}</span><span>${note}</span></div>
+          <div class="artboard-row">
+            ${arr.map(p => pageMarkupByNumber(p, { panel: true, title: `Pág ${p}`, badge: `Página ${p}`, flex: panelFlexForPage(p), mm: panelMmForPage(p) })).join("")}
+          </div>
+        </div>
+      `;
+      wrap.innerHTML = `
+        ${renderRow("Prancheta externa", fold.external, `[${fold.external.join(", ")}]`)}
+        ${renderRow("Prancheta interna", fold.internal, `[${fold.internal.join(", ")}]`)}
+      `;
+      els.viewer.innerHTML = "";
+      els.viewer.appendChild(wrap);
+      els.caption.textContent = fold.reducedPage
+        ? `Modo técnico: a Página ${fold.reducedPage} é a aba interna e recebe compensação de ${state.compensationMm}mm.`
+        : `Modo técnico: mapeamento físico das pranchetas externa e interna do ${fold.label}.`;
+    }
+
+    function renderFrontBack() {
+      const ratio = getRatio();
+
+      // Frente e verso agora usa a mesma regra universal do folder:
+      // o verso nunca é fixo no número 2; ele é calculado pelo total real.
+      // Em material simples de 2 páginas: Página 1 ⇄ Página 2.
+      // Se o fluxo for ampliado futuramente para mais páginas: 1 ⇄ total, 2 ⇄ total-1...
+      const totalPages = Math.max(2, expectedCount());
+      const frontPanels = frontPanelsForTotal(totalPages);
+      const backPanels = backPanelsFor(frontPanels, totalPages);
+      const frontPage = frontPanels[0];
+      const backPage = backPanels[0];
+
+      if (state.view === "compare") {
+        renderFlatPages([frontPage, backPage], { cols: 2, gap: true });
+        els.caption.textContent = `Frente e verso lado a lado: Pág ${frontPage} ⇄ Pág ${backPage}.`;
+        return;
+      }
+
+      const card = document.createElement("div");
+      const width = Math.max(280, Math.min(620, 520 * (ratio.w / ratio.h)));
+      card.className = `flip-card ${state.view === "back" ? "show-back" : ""}`;
+      card.style.setProperty("--doc-width", `${width}px`);
+      card.style.setProperty("--page-w", ratio.w);
+      card.style.setProperty("--page-h", ratio.h);
+      card.innerHTML = `
+        <div class="flip-face front">${pageMarkupByNumber(frontPage, { title: "Frente", badge: `Página ${frontPage}` })}</div>
+        <div class="flip-face back">${pageMarkupByNumber(backPage, { title: "Verso", badge: `Página ${backPage}` })}</div>
+      `;
+      els.viewer.innerHTML = "";
+      els.viewer.appendChild(card);
+      els.caption.textContent = state.view === "back"
+        ? `Verso real do material: Pág ${frontPage} ⇄ Pág ${backPage}.`
+        : `Frente do material: Pág ${frontPage}. Clique em "Verso" para ver a página de trás calculada automaticamente.`;
+    }
+
+    function renderBook() {
+      const maxSpread = Math.max(0, Math.floor((state.pageCount - 4) / 2));
+      if (state.view === "prevPage") { state.bookSpread = Math.max(0, state.bookSpread - 1); state.view = "spread"; }
+      if (state.view === "nextPage") { state.bookSpread = Math.min(maxSpread, state.bookSpread + 1); state.view = "spread"; }
+      const ratio = getRatio();
+      const width = Math.max(560, Math.min(1050, 430 * (ratio.w / ratio.h) * 2));
+      let pages = [];
+      let single = false;
+      if (state.view === "cover") { pages = [1]; single = true; }
+      else if (state.view === "backCover") { pages = [state.pageCount]; single = true; }
+      else {
+        const left = 2 + state.bookSpread * 2;
+        pages = [left, left + 1].filter(p => p <= state.pageCount - 1);
+        if (pages.length === 1) single = true;
+      }
+      const wrap = document.createElement("div");
+      wrap.className = `book-wrap ${single ? "single" : "turning"}`;
+      wrap.style.setProperty("--doc-width", `${width}px`);
+      wrap.style.setProperty("--mobile-doc-width", `${Math.max(760, width)}px`);
+      wrap.style.setProperty("--page-w", ratio.w);
+      wrap.style.setProperty("--page-h", ratio.h);
+      wrap.innerHTML = `${pages.map((p, i) => pageMarkupByNumber(p, { round: `${i === 0 ? "round-left" : ""} ${i === pages.length - 1 ? "round-right" : ""}` })).join("")}${!single ? `<div class="book-spine"></div>` : ""}`;
+      els.viewer.innerHTML = "";
+      els.viewer.appendChild(wrap);
+      if (state.view === "cover") els.caption.textContent = "Capa do livro.";
+      else if (state.view === "backCover") els.caption.textContent = "Contracapa do livro.";
+      else els.caption.textContent = `Miolo do livro: ${pages.map(p => `Página ${p}`).join(" e ")}.`;
+    }
+
+    function scaleBoxDimensions() {
+      const maxH = 460;
+      const scale = maxH / Math.max(state.boxHeight, state.boxWidth, state.boxDepth * 2.2);
+      return {
+        w: Math.max(80, state.boxWidth * scale),
+        h: Math.max(120, state.boxHeight * scale),
+        d: Math.max(45, state.boxDepth * scale)
+      };
+    }
+
+    function renderPackaging3D() {
+      const stage = document.createElement("div");
+      stage.className = "three-stage";
+      stage.innerHTML = `
+        <div class="three-info">Arraste para rotacionar · Scroll para zoom</div>
+      `;
+
+      els.viewer.innerHTML = "";
+      els.viewer.appendChild(stage);
+
+      initThreeMockup(stage);
+      els.caption.textContent = `Mockup 3D real com geometria ${state.boxWidth} × ${state.boxHeight} × ${state.boxDepth}. Cada arte é aplicada em uma face física da embalagem.`;
+    }
+
+    function initThreeMockup(container) {
+      if (!window.THREE) {
+        container.innerHTML = `<div class="three-error">Three.js não carregou. Conecte-se à internet ou baixe a biblioteca para usar o mockup 3D real.</div>`;
+        return;
+      }
+
+      disposeThreeMockup();
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0b1020);
+
+      const camera = new THREE.PerspectiveCamera(
+        42,
+        container.clientWidth / container.clientHeight,
+        0.1,
+        2000
+      );
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      container.appendChild(renderer.domElement);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+
+      const keyLight = new THREE.DirectionalLight(0xffffff, 0.95);
+      keyLight.position.set(10, 14, 10);
+      scene.add(keyLight);
+
+      const fillLight = new THREE.DirectionalLight(0x9ddfff, 0.34);
+      fillLight.position.set(-12, 4, -10);
+      scene.add(fillLight);
+
+      const rimLight = new THREE.DirectionalLight(0xffffff, 0.24);
+      rimLight.position.set(0, -8, 12);
+      scene.add(rimLight);
+
+      const materials = createThreeMaterials(renderer);
+      const geometry = new THREE.BoxGeometry(
+        Number(state.boxWidth) || 90,
+        Number(state.boxHeight) || 160,
+        Number(state.boxDepth) || 55
+      );
+
+      const mesh = new THREE.Mesh(geometry, materials);
+      scene.add(mesh);
+
+      const edges = new THREE.EdgesGeometry(geometry);
+      const edgeLines = new THREE.LineSegments(
+        edges,
+        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.16 })
+      );
+      mesh.add(edgeLines);
+
+      const floor = new THREE.Mesh(
+        new THREE.CircleGeometry(Math.max(state.boxWidth, state.boxDepth) * 1.25, 96),
+        new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18 })
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -(Number(state.boxHeight) || 160) / 2 - 1;
+      scene.add(floor);
+
+      const maxDimension = Math.max(Number(state.boxWidth) || 90, Number(state.boxHeight) || 160, Number(state.boxDepth) || 55);
+      let distance = maxDimension * 2.35;
+      let rotation = {
+        x: THREE.MathUtils.degToRad(state.camera.rx || -13),
+        y: THREE.MathUtils.degToRad(state.camera.ry || -32)
+      };
+
+      distance = distance / (state.camera.zoom || 1);
+
+      let dragging = false;
+      let previous = { x: 0, y: 0 };
+
+      renderer.domElement.addEventListener("pointerdown", event => {
+        dragging = true;
+        previous = { x: event.clientX, y: event.clientY };
+        renderer.domElement.setPointerCapture(event.pointerId);
+      });
+
+      renderer.domElement.addEventListener("pointermove", event => {
+        if (!dragging) return;
+        const dx = event.clientX - previous.x;
+        const dy = event.clientY - previous.y;
+        rotation.y += dx * 0.01;
+        rotation.x += dy * 0.01;
+        rotation.x = Math.max(-Math.PI / 2 + 0.12, Math.min(Math.PI / 2 - 0.12, rotation.x));
+        previous = { x: event.clientX, y: event.clientY };
+      });
+
+      renderer.domElement.addEventListener("pointerup", event => {
+        dragging = false;
+        try { renderer.domElement.releasePointerCapture(event.pointerId); } catch {}
+      });
+
+      renderer.domElement.addEventListener("pointercancel", () => {
+        dragging = false;
+      });
+
+      renderer.domElement.addEventListener("wheel", event => {
+        event.preventDefault();
+        distance += event.deltaY * 0.055;
+        distance = Math.max(maxDimension * 1.05, Math.min(maxDimension * 6, distance));
+        state.camera.zoom = Math.max(0.55, Math.min(1.55, maxDimension * 2.35 / distance));
+        els.zoomRange.value = String(state.camera.zoom.toFixed(2));
+      }, { passive: false });
+
+      const resizeObserver = new ResizeObserver(() => {
+        if (!container.clientWidth || !container.clientHeight) return;
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+      });
+      resizeObserver.observe(container);
+
+      function animate() {
+        const frame = requestAnimationFrame(animate);
+        threeMockup.frame = frame;
+
+        camera.position.x = distance * Math.sin(rotation.y) * Math.cos(rotation.x);
+        camera.position.y = distance * Math.sin(rotation.x);
+        camera.position.z = distance * Math.cos(rotation.y) * Math.cos(rotation.x);
+        camera.lookAt(0, 0, 0);
+
+        state.camera.rx = THREE.MathUtils.radToDeg(rotation.x);
+        state.camera.ry = THREE.MathUtils.radToDeg(rotation.y);
+
+        renderer.render(scene, camera);
+      }
+
+      threeMockup = { scene, camera, renderer, mesh, materials, geometry, resizeObserver, frame: null };
+      animate();
+    }
+
+    function createThreeMaterials(renderer) {
+      const placeholder = {
+        right: 0x233044,
+        left: 0x1f2937,
+        top: 0x334155,
+        bottom: 0x111827,
+        front: 0x475569,
+        back: 0x263244
+      };
+
+      const order = ["right", "left", "top", "bottom", "front", "back"];
+      const imageByFace = {
+        right: state.images[1],
+        left: state.images[3],
+        top: state.images[4],
+        bottom: state.images[5],
+        front: state.images[0],
+        back: state.images[2]
+      };
+
+      return order.map(face => {
+        const image = imageByFace[face];
+        if (!image) {
+          return new THREE.MeshStandardMaterial({
+            color: placeholder[face],
+            roughness: 0.72,
+            metalness: 0.02
+          });
+        }
+
+        const texture = new THREE.TextureLoader().load(image.src);
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        texture.needsUpdate = true;
+        if (THREE.sRGBEncoding) texture.encoding = THREE.sRGBEncoding;
+
+        return new THREE.MeshStandardMaterial({
+          map: texture,
+          roughness: 0.68,
+          metalness: 0.02
+        });
+      });
+    }
+
+    let threeMockup = null;
+
+    function disposeThreeMockup() {
+      if (!threeMockup) return;
+      if (threeMockup.frame) cancelAnimationFrame(threeMockup.frame);
+      if (threeMockup.resizeObserver) threeMockup.resizeObserver.disconnect();
+      if (threeMockup.geometry) threeMockup.geometry.dispose();
+      if (threeMockup.materials) {
+        threeMockup.materials.forEach(material => {
+          if (material.map) material.map.dispose();
+          material.dispose();
+        });
+      }
+      if (threeMockup.renderer) {
+        const canvas = threeMockup.renderer.domElement;
+        threeMockup.renderer.dispose();
+        if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      }
+      threeMockup = null;
+    }
+
+    function renderPackagingFlat() {
+      const dim = scaleBoxDimensions();
+      const wrap = document.createElement("div");
+      wrap.className = "pack-flat";
+      wrap.innerHTML = `
+        <div class="pack-row"><div class="pack-panel pack-top" style="width:${dim.w}px;height:${dim.d}px;">${faceMarkup(4)}</div></div>
+        <div class="pack-row">
+          <div class="pack-panel pack-side" style="width:${dim.d}px;height:${dim.h}px;">${faceMarkup(3)}</div>
+          <div class="pack-panel pack-front" style="width:${dim.w}px;height:${dim.h}px;">${faceMarkup(0)}</div>
+          <div class="pack-panel pack-side" style="width:${dim.d}px;height:${dim.h}px;">${faceMarkup(1)}</div>
+          <div class="pack-panel pack-back" style="width:${dim.w}px;height:${dim.h}px;">${faceMarkup(2)}</div>
+        </div>
+        <div class="pack-row"><div class="pack-panel pack-bottom" style="width:${dim.w}px;height:${dim.d}px;">${faceMarkup(5)}</div></div>`;
+      els.viewer.innerHTML = "";
+      els.viewer.appendChild(wrap);
+      els.caption.textContent = "Planificação da embalagem: laterais, frente, verso, topo e base com dimensões proporcionais.";
+    }
+
+    function renderPackaging() { state.view === "packFlat" ? renderPackagingFlat() : renderPackaging3D(); }
+
+    function applyCamera(box = document.getElementById("boxObject")) {
+      if (!box) return;
+      box.style.setProperty("--rx", `${state.camera.rx}deg`);
+      box.style.setProperty("--ry", `${state.camera.ry}deg`);
+      box.style.setProperty("--zoom", state.camera.zoom);
+    }
+
+    function bindDrag(stage, box) {
+      stage.addEventListener("pointerdown", e => { state.drag.active = true; state.drag.x = e.clientX; state.drag.y = e.clientY; stage.setPointerCapture(e.pointerId); });
+      stage.addEventListener("pointermove", e => {
+        if (!state.drag.active) return;
+        const dx = e.clientX - state.drag.x;
+        const dy = e.clientY - state.drag.y;
+        state.drag.x = e.clientX;
+        state.drag.y = e.clientY;
+        state.camera.ry += dx * 0.45;
+        state.camera.rx -= dy * 0.32;
+        state.camera.rx = Math.max(-72, Math.min(48, state.camera.rx));
+        applyCamera(box);
+      });
+      stage.addEventListener("pointerup", e => { state.drag.active = false; try { stage.releasePointerCapture(e.pointerId); } catch {} });
+      stage.addEventListener("pointercancel", () => { state.drag.active = false; });
+    }
+
+    function renderViewer() {
+      if (state.product === "book") return renderBook();
+      if (state.product === "frontBack") return renderFrontBack();
+      if (state.product === "packaging") return renderPackaging();
+      return renderFolder();
+    }
+
+    function isFolderStateActive(item) {
+      if (state.technicalMode) return item.key === "technical";
+      if (item.kind !== "view" && item.kind !== "flip") return false;
+      if (item.key === "fullClosed") return state.openPct <= 0 && state.folderSide === "front";
+      if (item.key === "fullOpen") return state.openPct >= 100 && state.folderSide === "front";
+      if (item.key === "verso") return state.folderSide === "back";
+      return false;
+    }
+
+    function handleFolderTabClick(item) {
+      if (state.technicalMode) { state.view = "technical"; render(); return; }
+      if (item.key === "fullClosed") { state.openPct = 0; state.folderSide = "front"; }
+      else if (item.key === "fullOpen") { state.openPct = 100; state.folderSide = "front"; }
+      else if (item.key === "verso") { state.folderSide = state.folderSide === "back" ? "front" : "back"; }
+      syncOpenStepFromPct();
+      render();
+    }
+
+    function renderTabs() {
+      els.stateTabs.innerHTML = "";
+      const states = getStates();
+      states.forEach(item => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        const isFolder = state.product === "folder";
+        const isActive = isFolder ? isFolderStateActive(item) : state.view === item.key;
+        const extraCls = item.kind === "action" ? " btn-action" : item.kind === "flip" ? " btn-flip" : "";
+        btn.className = `btn btn-primary${extraCls} ${isActive ? "active" : ""}`;
+        btn.textContent = item.key === "verso" && state.folderSide === "back" ? "Frente" : (state.product === "frontBack" && item.key === "back" && state.view === "back" ? "Frente" : item.label);
+        btn.addEventListener("click", () => {
+          if (isFolder) return handleFolderTabClick(item);
+          if (state.product === "frontBack" && item.key === "back" && state.view === "back") {
+            state.view = "front";
+          } else {
+            state.view = item.key;
+          }
+          render();
+        });
+        els.stateTabs.appendChild(btn);
+      });
+      // Barra fluida de abertura para Folder: controla a dobra em porcentagem real.
+      if (state.product === "folder" && !state.technicalMode) {
+        const pct = Math.round(clampNumber(state.openPct, 0, 100));
+        const rangeWrap = document.createElement("div");
+        rangeWrap.className = "fold-range-wrap";
+        rangeWrap.innerHTML = `
+          <div class="fold-range-label"><span>Abertura do material</span><strong>${pct}%</strong></div>
+          <input id="foldOpenRange" type="range" min="0" max="100" step="0.1" value="${pct}" aria-label="Porcentagem de abertura">
+          <div class="open-progress"><span style="width:${pct}%"></span></div>
+        `;
+        const input = rangeWrap.querySelector("#foldOpenRange");
+        input.addEventListener("input", event => {
+          state.openPct = Number(event.target.value);
+          requestFolderFluidRender(rangeWrap);
+        }, { passive: true });
+        input.addEventListener("change", () => {
+          syncOpenStepFromPct();
+          renderTabs();
+          renderViewer();
+          updateSummary();
+        });
+        els.stateTabs.appendChild(rangeWrap);
+      }
+    }
+
+    function renderUploadList() {
+      els.uploadList.innerHTML = "";
+      for (let i = 0; i < expectedCount(); i++) {
+        const label = document.createElement("label");
+        label.className = "file-label";
+        const image = state.images[i];
+        label.innerHTML = `
+          <input type="file" accept="image/*" data-index="${i}">
+          <span class="file-number">${i + 1}</span>
+          <span class="file-text"><strong>${pageName(i)}</strong><span>${image ? `${image.name} · ${image.width}x${image.height}px` : "Nenhuma imagem enviada"}</span></span>
+          <button class="mini-btn" type="button" data-index="${i}" title="Mover para cima">↑</button>
+          <span class="file-action">Trocar</span>`;
+        label.querySelector("input").addEventListener("change", handleSingleUpload);
+        label.querySelector(".mini-btn").addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); moveUp(i); });
+        els.uploadList.appendChild(label);
+      }
+    }
+
+    function moveUp(i) {
+      if (i <= 0) return;
+      const prev = state.images[i - 1];
+      state.images[i - 1] = state.images[i];
+      state.images[i] = prev;
+      render();
+    }
+
+    function loadImage(file, index) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            state.images[index] = { name: file.name, src: reader.result, width: img.naturalWidth, height: img.naturalHeight };
+            if (index === 0 && state.ratioPreset === "auto") { state.autoW = img.naturalWidth; state.autoH = img.naturalHeight; }
+            resolve();
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleSingleUpload(e) {
+      const file = e.currentTarget.files?.[0];
+      const index = Number(e.currentTarget.dataset.index);
+      if (!file) return;
+      await loadImage(file, index);
+      render();
+    }
+
+    async function handleBulk(files) {
+      const list = [...files].filter(file => file.type.startsWith("image/")).slice(0, expectedCount());
+      for (let i = 0; i < list.length; i++) await loadImage(list[i], i);
+      render();
+    }
+
+    function renderReview() {
+      const items = [];
+      const uploaded = uploadedCount();
+      const count = expectedCount();
+      if (uploaded === 0) items.push({ type: "warn", text: "Nenhuma imagem enviada ainda. Use o upload em massa para acelerar." });
+      else if (uploaded < count) items.push({ type: "warn", text: `Você enviou ${uploaded} de ${count} imagens. Ainda faltam ${count - uploaded}.` });
+      else items.push({ type: "ok", text: `Todas as ${count} imagens esperadas foram enviadas.` });
+
+      if (state.product === "folder") {
+        const fold = currentFold();
+        items.push({ type: "ok", text: `Imposição ${fold.label}: externa [${fold.external.join(", ")}], interna [${fold.internal.join(", ")}].` });
+        if (fold.reducedPage) items.push({ type: "warn", text: `A Página ${fold.reducedPage} é aba interna e está com compensação visual de ${state.compensationMm}mm.` });
+      }
+
+      if (state.ratioPreset === "auto" && !state.autoW && state.product !== "packaging") items.push({ type: "warn", text: "A proporção automática será definida pela primeira imagem enviada." });
+
+      const imageEntries = Object.values(state.images).filter(Boolean);
+      if (imageEntries.length > 1 && state.product !== "packaging") {
+        const base = imageEntries[0].width / imageEntries[0].height;
+        const mismatch = imageEntries.some(img => Math.abs((img.width / img.height) - base) > 0.05);
+        items.push(mismatch ? { type: "danger", text: "Há imagens com proporções diferentes. Pode haver cortes ou desalinhamento." } : { type: "ok", text: "As imagens têm proporções compatíveis entre si." });
+      }
+      const low = imageEntries.find(img => img.width < 900 || img.height < 900);
+      if (low) items.push({ type: "warn", text: "Uma ou mais imagens parecem ter resolução baixa para apresentação em tela grande." });
+      if (state.product === "packaging") items.push({ type: "ok", text: `Geometria 3D: largura ${state.boxWidth}, altura ${state.boxHeight}, profundidade ${state.boxDepth}.` });
+
+      els.reviewList.innerHTML = items.map(item => `<div class="review-item ${item.type === "ok" ? "" : item.type}"><span class="review-dot"></span><span>${item.text}</span></div>`).join("");
+    }
+
+    function updateUIVisibility() {
+      els.folderModelField.classList.toggle("hidden", state.product !== "folder");
+      els.pageCountField.classList.toggle("hidden", state.product === "frontBack" || state.product === "packaging" || state.product === "folder");
+      els.ratioField.classList.toggle("hidden", state.product === "packaging");
+      els.customRatioFields.classList.toggle("hidden", state.ratioPreset !== "custom" || state.product === "packaging");
+      els.foldTechnicalFields.classList.toggle("hidden", state.product !== "folder");
+      els.compensationField.classList.add("hidden");
+      els.packagingFields.classList.toggle("hidden", state.product !== "packaging");
+      els.resetCameraBtn.classList.toggle("hidden", state.product !== "packaging" || state.view !== "box3d");
+      els.zoomRange.value = String(state.camera.zoom);
+    }
+
+    function updateSummary() {
+      const model = state.product === "folder" ? currentFold().label : state.product === "packaging" ? state.packageType : getRatio().text;
+      els.summaryProject.textContent = productLabel();
+      els.summaryModel.textContent = model;
+      els.summaryStatus.textContent = `${uploadedCount()} / ${expectedCount()} imagens`;
+      els.toggleTitles.textContent = state.showTitles ? "Ocultar títulos" : "Mostrar títulos";
+      els.toggleImages.textContent = state.showImages ? "Ocultar imagens" : "Mostrar imagens";
+      els.presentationBtn.textContent = state.presentation ? "Sair da apresentação" : "Modo apresentação";
+      document.body.classList.toggle("hide-titles", !state.showTitles);
+      document.body.classList.toggle("hide-images", !state.showImages);
+      document.body.classList.toggle("presentation", state.presentation);
+      [...els.productCards.querySelectorAll(".project-card")].forEach(card => card.classList.toggle("active", card.dataset.product === state.product));
+    }
+
+    function render() {
+      normalize();
+      renderTabs();
+      renderViewer();
+      renderUploadList();
+      renderReview();
+      updateUIVisibility();
+      updateSummary();
+    }
+
+    function syncControls() {
+      const previousFold = state.foldModel;
+      state.foldModel = els.foldModel.value;
+      if (previousFold !== state.foldModel) {
+        state.openPct = 100;
+        syncOpenStepFromPct();
+        state.folderSide = "front";
+      }
+      state.pageCount = Number(els.pageCount.value);
+      state.ratioPreset = els.ratioPreset.value;
+      state.customW = Number(els.customW.value) || 1;
+      state.customH = Number(els.customH.value) || 1;
+      state.technicalMode = els.technicalMode.checked;
+      state.compensationMm = Number(els.compensationMm.value) || 0;
+      state.packageType = els.packageType.value;
+      state.boxWidth = Number(els.boxWidth.value) || 90;
+      state.boxHeight = Number(els.boxHeight.value) || 160;
+      state.boxDepth = Number(els.boxDepth.value) || 55;
+      state.camera.zoom = Number(els.zoomRange.value) || 1;
+      if (state.product === "folder") state.pageCount = currentFold().pages;
+      render();
+    }
+
+    function bindEvents() {
+      els.productCards.addEventListener("click", e => {
+        const card = e.target.closest(".project-card");
+        if (!card) return;
+        state.product = card.dataset.product;
+        if (state.product === "book") { state.pageCount = 8; state.view = "cover"; }
+        if (state.product === "folder") {
+          state.pageCount = currentFold().pages;
+          state.openPct = 100;
+          syncOpenStepFromPct();
+          state.folderSide = "front";
+          state.view = state.technicalMode ? "technical" : "front";
+        }
+        if (state.product === "frontBack") { state.pageCount = 2; state.view = "front"; }
+        if (state.product === "packaging") { state.pageCount = 6; state.view = "box3d"; }
+        els.pageCount.value = String(state.pageCount);
+        render();
+      });
+
+      [els.foldModel, els.pageCount, els.ratioPreset, els.customW, els.customH, els.technicalMode, els.compensationMm, els.packageType, els.boxWidth, els.boxHeight, els.boxDepth, els.zoomRange]
+        .forEach(el => { el.addEventListener("input", syncControls); el.addEventListener("change", syncControls); });
+
+      els.bulkUpload.addEventListener("change", e => handleBulk(e.currentTarget.files || []));
+      ["dragenter", "dragover"].forEach(type => els.bulkDrop.addEventListener(type, e => { e.preventDefault(); els.bulkDrop.classList.add("dragging"); }));
+      ["dragleave", "drop"].forEach(type => els.bulkDrop.addEventListener(type, e => { e.preventDefault(); els.bulkDrop.classList.remove("dragging"); }));
+      els.bulkDrop.addEventListener("drop", e => handleBulk(e.dataTransfer.files || []));
+
+      els.toggleTitles.addEventListener("click", () => { state.showTitles = !state.showTitles; updateSummary(); });
+      els.toggleImages.addEventListener("click", () => { state.showImages = !state.showImages; updateSummary(); });
+      els.presentationBtn.addEventListener("click", () => { state.presentation = !state.presentation; updateSummary(); });
+      els.resetCameraBtn.addEventListener("click", () => { state.camera = { rx: -13, ry: -32, zoom: 1 }; els.zoomRange.value = "1"; applyCamera(); });
+    }
+
+    function init() {
+      // comeca com o folder 100% aberto pra mostrar o efeito de abertura
+      if (state.product === "folder") {
+        state.openPct = 100;
+        syncOpenStepFromPct();
+      }
+      els.foldModel.value = state.foldModel;
+      els.pageCount.value = String(state.pageCount);
+      els.ratioPreset.value = state.ratioPreset;
+      els.customW.value = String(state.customW);
+      els.customH.value = String(state.customH);
+      els.technicalMode.checked = state.technicalMode;
+      els.compensationMm.value = String(state.compensationMm);
+      els.packageType.value = state.packageType;
+      els.boxWidth.value = String(state.boxWidth);
+      els.boxHeight.value = String(state.boxHeight);
+      els.boxDepth.value = String(state.boxDepth);
+      els.zoomRange.value = String(state.camera.zoom);
+      bindEvents();
+      render();
+    }
+
+    init();
+  </script>
+</body>
+</htm>
