@@ -3,10 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Veja como vai ficar seu projeto</title>
+  <title>Alia | Visualizador de Materiais Gráficos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     /*
+      LOGOS:
+      - Suba sua marca em assets/logo-alia-branca.png para aparecer no topo e na lateral.
+      - Caso a imagem não carregue, o código mostra uma versão textual "ALIA" automaticamente.
+
+
       =========================================================
       VISUALIZADOR PROFISSIONAL PARA DESIGNERS — INDEX.HTML
       ---------------------------------------------------------
@@ -33,23 +41,28 @@
     */
 
     :root {
-      --bg-1: #070914;
-      --bg-2: #111827;
-      --panel: rgba(255, 255, 255, 0.09);
-      --panel-strong: rgba(255, 255, 255, 0.15);
-      --dark-glass: rgba(3, 7, 18, 0.62);
-      --stroke: rgba(255, 255, 255, 0.14);
-      --stroke-strong: rgba(255, 255, 255, 0.24);
-      --text: #f8fbff;
-      --muted: rgba(248, 251, 255, 0.66);
-      --muted-2: rgba(248, 251, 255, 0.46);
-      --paper: #fffaf0;
-      --paper-2: #f1eadb;
-      --accent: #06b6c7;
-      --accent-2: #8b5cf6;
-      --success: #34d399;
-      --warning: #fbbf24;
-      --danger: #fb7185;
+      /* Paleta Alia — ajuste aqui caso queira usar outro tom oficial */
+      --bg-1: #111813;
+      --bg-2: #202a22;
+      --panel: rgba(255, 255, 255, 0.08);
+      --panel-strong: rgba(255, 255, 255, 0.14);
+      --dark-glass: rgba(12, 18, 15, 0.68);
+      --stroke: rgba(244, 235, 218, 0.16);
+      --stroke-strong: rgba(244, 235, 218, 0.28);
+      --text: #fbf6ec;
+      --muted: rgba(251, 246, 236, 0.68);
+      --muted-2: rgba(251, 246, 236, 0.46);
+      --paper: #fbf4e8;
+      --paper-2: #efe3cf;
+      --accent: #b88950;
+      --accent-2: #6f7d57;
+      --success: #8fbf7f;
+      --warning: #d6a75c;
+      --danger: #c96f5d;
+      --brand-dark: #101812;
+      --brand-green: #2f3a2d;
+      --brand-gold: #b88950;
+      --brand-sand: #fbf4e8;
       --radius-xl: 30px;
       --radius-lg: 22px;
       --radius-md: 14px;
@@ -72,16 +85,16 @@
       min-height: 100%;
       color: var(--text);
       background: var(--bg-1);
-      font-family: Inter, Roboto, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: "DM Sans", Inter, Roboto, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     body {
       min-height: 100vh;
       background:
-        radial-gradient(circle at 15% 12%, rgba(139, 92, 246, 0.26), transparent 30%),
-        radial-gradient(circle at 84% 16%, rgba(6, 182, 199, 0.22), transparent 28%),
-        radial-gradient(circle at 50% 100%, rgba(14, 165, 233, 0.14), transparent 36%),
-        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+        radial-gradient(circle at 12% 10%, rgba(184, 137, 80, 0.22), transparent 30%),
+        radial-gradient(circle at 86% 14%, rgba(111, 125, 87, 0.24), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(244, 235, 218, 0.10), transparent 38%),
+        linear-gradient(135deg, var(--brand-dark), var(--brand-green));
       overflow-x: hidden;
     }
 
@@ -91,8 +104,8 @@
       inset: 0;
       pointer-events: none;
       background-image:
-        linear-gradient(rgba(255,255,255,0.034) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.034) 1px, transparent 1px);
+        linear-gradient(rgba(244,235,218,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(244,235,218,0.035) 1px, transparent 1px);
       background-size: 44px 44px;
       mask-image: radial-gradient(circle at center, black, transparent 72%);
       opacity: 0.55;
@@ -133,6 +146,73 @@
       padding: 26px 28px 0;
     }
 
+    .brand-lockup {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 42px;
+      margin-bottom: 18px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .brand-logo {
+      display: block;
+      width: auto;
+      max-width: 156px;
+      max-height: 42px;
+      object-fit: contain;
+    }
+
+    .brand-fallback {
+      display: none;
+      align-items: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid rgba(244,235,218,0.28);
+      border-radius: 999px;
+      color: var(--brand-sand);
+      background: rgba(244,235,218,0.06);
+      font-size: 22px;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+    }
+
+    .brand-line {
+      color: rgba(251,246,236,0.62);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .brand-card {
+      display: grid;
+      gap: 10px;
+      background:
+        linear-gradient(135deg, rgba(184,137,80,0.18), rgba(255,255,255,0.055)),
+        rgba(255,255,255,0.055);
+    }
+
+    .brand-card img {
+      width: auto;
+      max-width: 150px;
+      max-height: 42px;
+      object-fit: contain;
+    }
+
+    .brand-card strong {
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 950;
+    }
+
+    .brand-card span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
     .eyebrow {
       display: inline-flex;
       align-items: center;
@@ -156,7 +236,7 @@
       height: 7px;
       border-radius: 999px;
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      box-shadow: 0 0 18px rgba(6,182,199,0.72);
+      box-shadow: 0 0 18px rgba(184,137,80,0.72);
     }
 
     h1 {
@@ -328,8 +408,8 @@
       color: rgba(0,0,0,0.52);
       text-align: center;
       background:
-        radial-gradient(circle at 30% 18%, rgba(6,182,199,0.12), transparent 25%),
-        linear-gradient(135deg, #fffaf0, #e9e1d1);
+        radial-gradient(circle at 30% 18%, rgba(184,137,80,0.12), transparent 25%),
+        linear-gradient(135deg, #fbf4e8, #efe3cf);
     }
 
     .placeholder-inner { display: grid; justify-items: center; gap: 10px; }
@@ -465,12 +545,12 @@
       background: rgba(255,255,255,0.08);
       border-color: rgba(255,255,255,0.18);
     }
-    .btn.btn-action:hover { background: rgba(6,182,199,0.18); }
+    .btn.btn-action:hover { background: rgba(184,137,80,0.18); }
     .btn.btn-flip {
-      background: linear-gradient(135deg, rgba(139,92,246,0.85), rgba(6,182,199,0.85));
+      background: linear-gradient(135deg, rgba(111,125,87,0.85), rgba(184,137,80,0.85));
       border-color: transparent;
     }
-    .btn.btn-flip.active { outline: 3px solid rgba(139,92,246,0.32); }
+    .btn.btn-flip.active { outline: 3px solid rgba(111,125,87,0.32); }
     .open-progress {
       width: 100%;
       max-width: 380px;
@@ -830,8 +910,8 @@
       transition: transform 170ms ease, background 170ms ease, border-color 170ms ease, box-shadow 170ms ease;
     }
     .btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.26); background: rgba(255,255,255,0.16); box-shadow: 0 10px 26px rgba(0,0,0,0.18); }
-    .btn-primary { background: linear-gradient(135deg, rgba(6,182,199,0.95), rgba(14,165,233,0.84)); border-color: transparent; }
-    .btn.active { outline: 3px solid rgba(6,182,199,0.22); background: linear-gradient(135deg, rgba(6,182,199,1), rgba(139,92,246,0.9)); border-color: transparent; }
+    .btn-primary { background: linear-gradient(135deg, rgba(184,137,80,0.95), rgba(111,125,87,0.84)); border-color: transparent; }
+    .btn.active { outline: 3px solid rgba(184,137,80,0.22); background: linear-gradient(135deg, rgba(184,137,80,1), rgba(111,125,87,0.9)); border-color: transparent; }
 
     .sidebar {
       position: sticky;
@@ -872,8 +952,8 @@
       height: 24px;
       margin-right: 6px;
       border-radius: 999px;
-      background: rgba(6,182,199,0.18);
-      color: #a7f3ff;
+      background: rgba(184,137,80,0.18);
+      color: #f5dec0;
       font-size: 11px;
       font-weight: 950;
     }
@@ -895,7 +975,7 @@
       text-align: left;
       transition: transform 170ms ease, background 170ms ease, border-color 170ms ease;
     }
-    .project-card:hover, .project-card.active { transform: translateY(-1px); border-color: rgba(6,182,199,0.54); background: rgba(6,182,199,0.12); }
+    .project-card:hover, .project-card.active { transform: translateY(-1px); border-color: rgba(184,137,80,0.54); background: rgba(184,137,80,0.12); }
     .card-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 14px; background: rgba(255,255,255,0.1); font-size: 18px; }
     .card-copy strong { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 950; }
     .card-copy span { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; }
@@ -950,7 +1030,7 @@
       cursor: pointer;
       transition: background 170ms ease, border-color 170ms ease, transform 170ms ease;
     }
-    .upload-drop:hover, .upload-drop.dragging { transform: translateY(-1px); border-color: rgba(6,182,199,0.7); background: rgba(6,182,199,0.11); }
+    .upload-drop:hover, .upload-drop.dragging { transform: translateY(-1px); border-color: rgba(184,137,80,0.7); background: rgba(184,137,80,0.11); }
     .upload-drop input { position: absolute; opacity: 0; pointer-events: none; }
     .upload-drop strong { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 950; }
     .upload-drop span { display: block; color: var(--muted); font-size: 12px; line-height: 1.45; }
@@ -969,7 +1049,7 @@
       cursor: pointer;
       transition: background 170ms ease, border-color 170ms ease, transform 170ms ease;
     }
-    .file-label:hover { transform: translateY(-1px); border-color: rgba(6,182,199,0.54); background: rgba(255,255,255,0.085); }
+    .file-label:hover { transform: translateY(-1px); border-color: rgba(184,137,80,0.54); background: rgba(255,255,255,0.085); }
     .file-label input { position: absolute; opacity: 0; pointer-events: none; }
     .file-number { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 12px; background: rgba(255,255,255,0.1); color: #fff; font-size: 12px; font-weight: 950; }
     .file-text { min-width: 0; }
@@ -1030,7 +1110,7 @@
       border-radius: 28px;
       background:
         radial-gradient(circle at 50% 18%, rgba(255,255,255,0.08), transparent 32%),
-        linear-gradient(135deg, rgba(8,13,28,0.98), rgba(16,24,39,0.92));
+        linear-gradient(135deg, rgba(16,24,18,0.98), rgba(47,58,45,0.92));
       box-shadow:
         0 30px 90px rgba(0,0,0,0.36),
         inset 0 1px 0 rgba(255,255,255,0.08);
@@ -1075,9 +1155,14 @@
       <section class="main">
         <header class="header">
           <div>
-            <div class="eyebrow">Mockup inteligente para designers</div>
-            <h1>Veja como vai ficar seu projeto</h1>
-            <p class="subtitle">Escolha o produto gráfico, envie as artes na ordem lógica e visualize como ele será aprovado, dobrado, folheado ou montado em 3D.</p>
+            <a class="brand-lockup" href="#" aria-label="Alia Empreendimentos">
+              <img class="brand-logo" src="assets/logo-alia-branca.png" alt="Alia Empreendimentos" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+              <span class="brand-fallback">ALIA</span>
+              <span class="brand-line">Empreendimentos</span>
+            </a>
+            <div class="eyebrow">Visualizador Alia</div>
+            <h1>Prévia profissional dos seus materiais gráficos</h1>
+            <p class="subtitle">Envie suas artes e visualize panfletos, folders, livros, peças frente e verso ou embalagens em um ambiente com a identidade da Alia.</p>
           </div>
           <aside class="project-summary" aria-label="Resumo do projeto">
             <div class="summary-row"><span>Produto</span><strong id="summaryProject">Livreto</strong></div>
@@ -1104,6 +1189,12 @@
       </section>
 
       <aside class="sidebar">
+        <section class="section brand-card" aria-label="Identidade Alia">
+          <img src="assets/logo-alia-branca.png" alt="Alia Empreendimentos" onerror="this.style.display='none';">
+          <strong>Alia Empreendimentos</strong>
+          <span>Ferramenta para pré-visualização e aprovação de materiais gráficos.</span>
+        </section>
+
         <section class="section">
           <h2 class="section-title"><span><span class="step-pill">1</span>Tipo de produto</span></h2>
           <div class="project-cards" id="productCards">
